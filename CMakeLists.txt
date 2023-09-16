@@ -1,7 +1,7 @@
 cmake_minimum_required(VERSION 3.0.0)
-project(cppTemplate VERSION 0.1.0 LANGUAGES C CXX)
+project(minecraftClone VERSION 0.1.0 LANGUAGES C CXX)
 
-set(EXEC_NAME cppTemplate)
+set(EXEC_NAME minecraftClone)
 
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 
@@ -33,17 +33,22 @@ add_subdirectory(dependencies/fmt)
 set(ENABLE_CXX, ON)
 
 # Set targets.
-add_executable(cppTemplate ${SRC_FILES})
-# add_library(cppTemplate STATIC ${SRC_FILES}) # Use this for library.
+add_executable(minecraftClone ${SRC_FILES})
+# add_library(minecraftClone STATIC ${SRC_FILES}) # Use this for library.
 
 # Set include directories.
-target_include_directories(cppTemplate PRIVATE dependencies/expected/include)
-target_include_directories(cppTemplate PRIVATE dependencies/fmt/include)
-target_include_directories(cppTemplate PRIVATE src/include)
+target_include_directories(minecraftClone PRIVATE src/include)
+target_include_directories(minecraftClone PRIVATE dependencies/expected/include)
+target_include_directories(minecraftClone PRIVATE dependencies/fmt/include)
+target_include_directories(minecraftClone PRIVATE dependencies/glfw/include)
 
 # Link libraries.
-target_link_libraries(cppTemplate PRIVATE expected)
-target_link_libraries(cppTemplate PRIVATE fmt)
+target_link_libraries(minecraftClone PRIVATE expected)
+target_link_libraries(minecraftClone PRIVATE fmt)
+target_link_libraries(minecraftClone PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/dependencies/glfw/lib-universal/libglfw.3.dylib)
+if (APPLE)
+  target_link_libraries(minecraftClone PRIVATE "-framework OpenGL")
+endif()
 
 ######### TESTING #########
 # Add Google Test as a subdirectory

@@ -16,7 +16,7 @@
       "name": "(lldb) Launch",
       "type": "cppdbg",
       "request": "launch",
-      "program": "${workspaceFolder}/build/cppTemplate",
+      "program": "${workspaceFolder}/build/minecraftClone",
       "args": [],
       "stopAtEntry": false,
       "cwd": "${fileDirname}",

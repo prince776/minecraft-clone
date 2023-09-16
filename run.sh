@@ -1,2 +1,2 @@
 #!/bin/sh
-./build/cppTemplate
+./build/minecraftClone
