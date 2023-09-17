@@ -7,6 +7,7 @@
 #include "renderer/camera.hpp"
 #include "renderer/index-buffer.hpp"
 #include "renderer/renderer.hpp"
+#include "renderer/texture.hpp"
 #include "renderer/vertex-array.hpp"
 #include "renderer/vertex-buffer-layout.hpp"
 #include "renderer/vertex-buffer.hpp"
@@ -45,16 +46,25 @@ int main(void) {
 
     glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
 
-    float positions[] = {
-        -0.5f,
-        -0.5f,
-        0.5f,
-        -0.5f,
-        0.5f,
-        0.5f,
-        -0.5f,
-        0.5f,
-    };
+    float positions[] = {-0.5f,
+                         -0.5f,
+                         0,
+                         0,
+
+                         0.5f,
+                         -0.5f,
+                         1,
+                         0,
+
+                         0.5f,
+                         0.5f,
+                         1,
+                         1,
+
+                         -0.5f,
+                         0.5f,
+                         0,
+                         1};
 
     unsigned int indices[] = {0, 1, 2, 2, 3, 0};
 
@@ -62,15 +72,18 @@ int main(void) {
         VertexArray vao;
         vao.Bind();
 
-        VertexBuffer vbo(positions, 4 * 2 * sizeof(float));
+        VertexBuffer vbo(positions, 4 * 4 * sizeof(float));
 
         VertexBufferLayout layout;
+        layout.Push<float>(2);
         layout.Push<float>(2);
         vao.AddBuffer(vbo, layout);
 
         IndexBuffer ibo(indices, 6);
 
         Shader basicShader("res/shaders/basic.glsl");
+
+        Texture texture("res/textures/tileset.png");
 
         Renderer renderer;
 
@@ -88,6 +101,8 @@ int main(void) {
             camera.HandleInput(window);
 
             basicShader.Bind();
+            texture.Bind();
+            basicShader.SetUniform1i("u_TextureSlot", 0);
             basicShader.SetUniformMat4f("u_MVP",
                                         projectionMat * camera.ViewMatrix() *
                                             transformMatrix);
