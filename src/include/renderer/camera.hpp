@@ -25,6 +25,8 @@ class Camera {
     glm::vec3 pos;
     glm::vec3 rot;
 
+    double mouseX = -1, mouseY = -1;
+
   public:
-    static inline float DefaultSpeed = 0.01f;
+    static inline float DefaultSpeed = 0.05f;
 };

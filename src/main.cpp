@@ -28,7 +28,7 @@ int main(void) {
     glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE);
 #endif
 
-    window = glfwCreateWindow(640, 480, "Minecraft", NULL, NULL);
+    window = glfwCreateWindow(800, 800, "Minecraft", NULL, NULL);
     if (!window) {
         glfwTerminate();
         return -1;
@@ -42,6 +42,8 @@ int main(void) {
 
     GLCALL(glEnable(GL_BLEND));
     GLCALL(glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA));
+
+    glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
 
     float positions[] = {
         -0.5f,
@@ -78,7 +80,7 @@ int main(void) {
 
         auto& camera = Camera::Get();
 
-        auto projectionMat = glm::perspective(35.0f, 1.0f, 0.1f, 100.0f);
+        auto projectionMat = glm::perspective(70.0f, 1.0f, 0.1f, 100.0f);
 
         while (!glfwWindowShouldClose(window)) {
             renderer.clear();

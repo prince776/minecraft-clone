@@ -2,18 +2,34 @@
 #include "GLFW/glfw3.h"
 #include "ext/matrix_float4x4.hpp"
 #include "ext/matrix_transform.hpp"
+#include "ext/vector_float3.hpp"
+#include "fmt/core.h"
 #include "matrix.hpp"
 #include <GLFW/glfw3.h>
+#include <valarray>
 
 glm::mat4 Camera::ViewMatrix() const noexcept {
     auto viewMat = glm::mat4(1.0f);
     viewMat      = glm::translate(viewMat, pos);
+
+    auto xAxis = glm::vec3(1, 0, 0);
+    viewMat    = glm::rotate(viewMat, rot.x, xAxis);
+
+    auto yAxis = glm::vec3(0, 1, 0);
+    viewMat    = glm::rotate(viewMat, rot.y, yAxis);
+
+    auto zAxis = glm::vec3(0, 0, 1);
+    viewMat    = glm::rotate(viewMat, rot.z, zAxis);
 
     return glm::inverse(viewMat);
 }
 
 void Camera::Move(const glm::vec3& delta) noexcept {
     pos += delta;
+}
+
+void Camera::Rotate(const glm::vec3& delta) noexcept {
+    rot += delta;
 }
 
 void Camera::HandleInput(GLFWwindow* window) noexcept {
@@ -38,4 +54,27 @@ void Camera::HandleInput(GLFWwindow* window) noexcept {
     }
 
     Move(posDelta);
+
+    auto rotDelta = glm::vec3(0.0f);
+
+    double currX, currY;
+    glfwGetCursorPos(window, &currX, &currY);
+
+    if (std::abs(mouseX + 1) < 1e-6) {
+        mouseX = currX;
+        mouseY = currY;
+    }
+
+    auto delX = currX - mouseX;
+    auto delY = currY - mouseY;
+
+    // if (glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_1)) {
+    rotDelta.y = -delX * 0.001f;
+    rotDelta.x = -delY * 0.001f;
+    // }
+
+    mouseX = currX;
+    mouseY = currY;
+
+    Rotate(rotDelta);
 }
