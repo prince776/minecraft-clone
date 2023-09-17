@@ -1,3 +1,4 @@
+#include "ext/matrix_clip_space.hpp"
 #include "ext/matrix_transform.hpp"
 #include "ext/vector_float3.hpp"
 #include "fwd.hpp"
@@ -77,6 +78,8 @@ int main(void) {
 
         auto& camera = Camera::Get();
 
+        auto projectionMat = glm::perspective(35.0f, 1.0f, 0.1f, 100.0f);
+
         while (!glfwWindowShouldClose(window)) {
             renderer.clear();
 
@@ -84,7 +87,8 @@ int main(void) {
 
             basicShader.Bind();
             basicShader.SetUniformMat4f("u_MVP",
-                                        camera.ViewMatrix() * transformMatrix);
+                                        projectionMat * camera.ViewMatrix() *
+                                            transformMatrix);
             renderer.draw(vao, ibo, basicShader);
 
             glfwSwapBuffers(window);

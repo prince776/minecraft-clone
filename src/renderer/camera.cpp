@@ -30,6 +30,12 @@ void Camera::HandleInput(GLFWwindow* window) noexcept {
     if (glfwGetKey(window, GLFW_KEY_A) == GLFW_PRESS) {
         posDelta.x -= DefaultSpeed;
     }
+    if (glfwGetKey(window, GLFW_KEY_H) == GLFW_PRESS) {
+        posDelta.z -= DefaultSpeed;
+    }
+    if (glfwGetKey(window, GLFW_KEY_L) == GLFW_PRESS) {
+        posDelta.z += DefaultSpeed;
+    }
 
     Move(posDelta);
 }
