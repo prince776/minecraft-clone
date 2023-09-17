@@ -8,11 +8,5 @@ do
 done
 
 config="${config:-Debug}"
-echo "Building with config: ${config}"
-
 cmake -S . -B build -DCMAKE_BUILD_TYPE=$config
-cd build
-make
-cd ..
 cp build/compile_commands.json compile_commands.json
-cp -R res/ build/res

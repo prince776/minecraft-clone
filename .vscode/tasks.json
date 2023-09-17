@@ -8,6 +8,12 @@
       "args": ["${workspaceFolder}/clean.sh"]
     },
     {
+      "label": "Generate Compile Commands",
+      "type": "shell",
+      "command": "bash",
+      "args": ["${workspaceFolder}/gen-compile-db.sh"]
+    },
+    {
       "label": "Debug Build",
       "type": "shell",
       "command": "bash",
