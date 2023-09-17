@@ -2,6 +2,8 @@
 #include "ext/matrix_transform.hpp"
 #include "ext/vector_float3.hpp"
 #include "fwd.hpp"
+#include "game/cube.hpp"
+#include "game/textute-atlas.hpp"
 #include "glm.hpp"
 #include "glm/gtc/matrix_transform.hpp"
 #include "renderer/camera.hpp"
@@ -44,52 +46,46 @@ int main(void) {
     GLCALL(glEnable(GL_BLEND));
     GLCALL(glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA));
 
+    GLCALL(glEnable(GL_DEPTH_TEST));
+
     glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
 
-    float positions[] = {-0.5f,
-                         -0.5f,
-                         0,
-                         0,
-
-                         0.5f,
-                         -0.5f,
-                         1,
-                         0,
-
-                         0.5f,
-                         0.5f,
-                         1,
-                         1,
-
-                         -0.5f,
-                         0.5f,
-                         0,
-                         1};
-
-    unsigned int indices[] = {0, 1, 2, 2, 3, 0};
-
     {
+        Texture texture("res/textures/tileset.png");
+
+        TextureAtlas tilesetAtlas(16, 16);
+        TexCoord dirtTile{2, 15}, grassTile{0, 15}, grassSideTile{3, 15};
+
+        Cube cube(glm::vec3(0, 0, 0),
+                  glm::vec3(1, 1, 1),
+                  tilesetAtlas,
+                  grassTile,
+                  dirtTile,
+                  grassSideTile,
+                  0);
+
         VertexArray vao;
         vao.Bind();
 
-        VertexBuffer vbo(positions, 4 * 4 * sizeof(float));
+        auto cubeVertices = cube.Vertices();
+        auto cubeIndices  = cube.Indices();
+
+        VertexBuffer vbo(cubeVertices.data(), cubeVertices.size() * sizeof(Vertex));
 
         VertexBufferLayout layout;
+        layout.Push<float>(3);
         layout.Push<float>(2);
-        layout.Push<float>(2);
+        layout.Push<float>(1);
         vao.AddBuffer(vbo, layout);
 
-        IndexBuffer ibo(indices, 6);
+        IndexBuffer ibo(cubeIndices.data(), cubeIndices.size());
 
         Shader basicShader("res/shaders/basic.glsl");
-
-        Texture texture("res/textures/tileset.png");
 
         Renderer renderer;
 
         auto transformMatrix = glm::mat4(1.0f);
-        transformMatrix =
-            glm::translate(transformMatrix, glm::vec3(0.25f, -0.25f, 0));
+        transformMatrix      = glm::translate(transformMatrix, glm::vec3(0.25f, -0.25f, 0));
 
         auto& camera = Camera::Get();
 
@@ -104,8 +100,7 @@ int main(void) {
             texture.Bind();
             basicShader.SetUniform1i("u_TextureSlot", 0);
             basicShader.SetUniformMat4f("u_MVP",
-                                        projectionMat * camera.ViewMatrix() *
-                                            transformMatrix);
+                                        projectionMat * camera.ViewMatrix() * transformMatrix);
             renderer.draw(vao, ibo, basicShader);
 
             glfwSwapBuffers(window);

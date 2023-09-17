@@ -1,6 +1,11 @@
 [
 {
   "directory": "/Users/prince/projects/minecraft-clone/build",
+  "command": "/Library/Developer/CommandLineTools/usr/bin/c++  -I/Users/prince/projects/minecraft-clone/src/include -I/Users/prince/projects/minecraft-clone/dependencies/expected/include -I/Users/prince/projects/minecraft-clone/dependencies/fmt/include -I/Users/prince/projects/minecraft-clone/dependencies/glfw/include -I/Users/prince/projects/minecraft-clone/dependencies/glm/glm -I/Users/prince/projects/minecraft-clone/dependencies/glm  -Wall -Wextra -Wfloat-equal -Wundef -Wcast-align -Wwrite-strings -Wmissing-declarations -Wredundant-decls -Wshadow -Woverloaded-virtual -fsanitize=address -fsanitize=undefined -D_GLIBCXX_DEBUG -D_GLIBCXX_DEBUG_PEDANTIC -g  -g -arch arm64 -isysroot /Library/Developer/CommandLineTools/SDKs/MacOSX13.3.sdk -std=gnu++20 -o CMakeFiles/minecraftClone.dir/src/game/cube.cpp.o -c /Users/prince/projects/minecraft-clone/src/game/cube.cpp",
+  "file": "/Users/prince/projects/minecraft-clone/src/game/cube.cpp"
+},
+{
+  "directory": "/Users/prince/projects/minecraft-clone/build",
   "command": "/Library/Developer/CommandLineTools/usr/bin/c++  -I/Users/prince/projects/minecraft-clone/src/include -I/Users/prince/projects/minecraft-clone/dependencies/expected/include -I/Users/prince/projects/minecraft-clone/dependencies/fmt/include -I/Users/prince/projects/minecraft-clone/dependencies/glfw/include -I/Users/prince/projects/minecraft-clone/dependencies/glm/glm -I/Users/prince/projects/minecraft-clone/dependencies/glm  -Wall -Wextra -Wfloat-equal -Wundef -Wcast-align -Wwrite-strings -Wmissing-declarations -Wredundant-decls -Wshadow -Woverloaded-virtual -fsanitize=address -fsanitize=undefined -D_GLIBCXX_DEBUG -D_GLIBCXX_DEBUG_PEDANTIC -g  -g -arch arm64 -isysroot /Library/Developer/CommandLineTools/SDKs/MacOSX13.3.sdk -std=gnu++20 -o CMakeFiles/minecraftClone.dir/src/main.cpp.o -c /Users/prince/projects/minecraft-clone/src/main.cpp",
   "file": "/Users/prince/projects/minecraft-clone/src/main.cpp"
 },
