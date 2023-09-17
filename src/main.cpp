@@ -1,3 +1,9 @@
+#include "ext/matrix_transform.hpp"
+#include "ext/vector_float3.hpp"
+#include "fwd.hpp"
+#include "glm.hpp"
+#include "glm/gtc/matrix_transform.hpp"
+#include "renderer/camera.hpp"
 #include "renderer/index-buffer.hpp"
 #include "renderer/renderer.hpp"
 #include "renderer/vertex-array.hpp"
@@ -65,9 +71,20 @@ int main(void) {
 
         Renderer renderer;
 
+        auto transformMatrix = glm::mat4(1.0f);
+        transformMatrix =
+            glm::translate(transformMatrix, glm::vec3(0.25f, -0.25f, 0));
+
+        auto& camera = Camera::Get();
+
         while (!glfwWindowShouldClose(window)) {
             renderer.clear();
 
+            camera.HandleInput(window);
+
+            basicShader.Bind();
+            basicShader.SetUniformMat4f("u_MVP",
+                                        camera.ViewMatrix() * transformMatrix);
             renderer.draw(vao, ibo, basicShader);
 
             glfwSwapBuffers(window);

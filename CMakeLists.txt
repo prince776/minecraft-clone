@@ -31,6 +31,7 @@ file(GLOB_RECURSE SRC_FILES "src/*.cpp")
 
 add_subdirectory(dependencies/expected)
 add_subdirectory(dependencies/fmt)
+add_subdirectory(dependencies/glm)
 set(ENABLE_CXX, ON)
 
 # Set targets.
@@ -42,10 +43,12 @@ target_include_directories(minecraftClone PRIVATE src/include)
 target_include_directories(minecraftClone PRIVATE dependencies/expected/include)
 target_include_directories(minecraftClone PRIVATE dependencies/fmt/include)
 target_include_directories(minecraftClone PRIVATE dependencies/glfw/include)
+target_include_directories(minecraftClone PRIVATE dependencies/glm/glm)
 
 # Link libraries.
 target_link_libraries(minecraftClone PRIVATE expected)
 target_link_libraries(minecraftClone PRIVATE fmt)
+target_link_libraries(minecraftClone PRIVATE "glm::glm")
 target_link_libraries(minecraftClone PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/dependencies/glfw/lib-universal/libglfw.3.dylib)
 if (APPLE)
   target_link_libraries(minecraftClone PRIVATE "-framework OpenGL")
