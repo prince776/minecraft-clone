@@ -12,11 +12,12 @@ glm::mat4 Camera::ViewMatrix() const noexcept {
     auto viewMat = glm::mat4(1.0f);
     viewMat      = glm::translate(viewMat, pos);
 
-    auto xAxis = glm::vec3(1, 0, 0);
-    viewMat    = glm::rotate(viewMat, rot.x, xAxis);
-
+    // Wow, we have to do y axis rot before x, otherwise it inverts sometimes.
     auto yAxis = glm::vec3(0, 1, 0);
     viewMat    = glm::rotate(viewMat, rot.y, yAxis);
+
+    auto xAxis = glm::vec3(1, 0, 0);
+    viewMat    = glm::rotate(viewMat, rot.x, xAxis);
 
     auto zAxis = glm::vec3(0, 0, 1);
     viewMat    = glm::rotate(viewMat, rot.z, zAxis);
@@ -35,16 +36,20 @@ void Camera::Rotate(const glm::vec3& delta) noexcept {
 void Camera::HandleInput(GLFWwindow* window) noexcept {
     auto posDelta = glm::vec3(0.0f);
     if (glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS) {
-        posDelta.z += DefaultSpeed;
+        posDelta.z += DefaultSpeed * std::cos(rot.y);
+        posDelta.x += DefaultSpeed * std::sin(rot.y);
     }
     if (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS) {
-        posDelta.z -= DefaultSpeed;
+        posDelta.z -= DefaultSpeed * std::cos(rot.y);
+        posDelta.x -= DefaultSpeed * std::sin(rot.y);
     }
     if (glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS) {
-        posDelta.x += DefaultSpeed;
+        posDelta.x += DefaultSpeed * std::cos(rot.y);
+        posDelta.z -= DefaultSpeed * std::sin(rot.y);
     }
     if (glfwGetKey(window, GLFW_KEY_A) == GLFW_PRESS) {
-        posDelta.x -= DefaultSpeed;
+        posDelta.x -= DefaultSpeed * std::cos(rot.y);
+        posDelta.z += DefaultSpeed * std::sin(rot.y);
     }
     if (glfwGetKey(window, GLFW_KEY_LEFT_SHIFT) == GLFW_PRESS) {
         posDelta.y -= DefaultSpeed;
