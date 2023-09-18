@@ -34,11 +34,11 @@ void Camera::Rotate(const glm::vec3& delta) noexcept {
 
 void Camera::HandleInput(GLFWwindow* window) noexcept {
     auto posDelta = glm::vec3(0.0f);
-    if (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS) {
-        posDelta.y += DefaultSpeed;
-    }
     if (glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS) {
-        posDelta.y -= DefaultSpeed;
+        posDelta.z += DefaultSpeed;
+    }
+    if (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS) {
+        posDelta.z -= DefaultSpeed;
     }
     if (glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS) {
         posDelta.x += DefaultSpeed;
@@ -46,11 +46,11 @@ void Camera::HandleInput(GLFWwindow* window) noexcept {
     if (glfwGetKey(window, GLFW_KEY_A) == GLFW_PRESS) {
         posDelta.x -= DefaultSpeed;
     }
-    if (glfwGetKey(window, GLFW_KEY_H) == GLFW_PRESS) {
-        posDelta.z -= DefaultSpeed;
+    if (glfwGetKey(window, GLFW_KEY_LEFT_SHIFT) == GLFW_PRESS) {
+        posDelta.y -= DefaultSpeed;
     }
-    if (glfwGetKey(window, GLFW_KEY_L) == GLFW_PRESS) {
-        posDelta.z += DefaultSpeed;
+    if (glfwGetKey(window, GLFW_KEY_SPACE) == GLFW_PRESS) {
+        posDelta.y += DefaultSpeed;
     }
 
     Move(posDelta);
