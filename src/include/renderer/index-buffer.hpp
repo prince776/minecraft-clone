@@ -6,6 +6,7 @@
 
 class IndexBuffer {
   public:
+    IndexBuffer() = default;
     IndexBuffer(const unsigned int* data, size_t count) noexcept;
     ~IndexBuffer() noexcept;
 
@@ -16,7 +17,16 @@ class IndexBuffer {
         return count;
     }
 
+    GLuint GLID() const noexcept {
+        return glID;
+    }
+
+    void Clean() noexcept {
+        glID  = 0;
+        count = 0;
+    }
+
   private:
-    GLuint glID;
-    size_t count;
+    GLuint glID{};
+    size_t count{};
 };

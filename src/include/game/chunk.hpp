@@ -1,8 +1,11 @@
 #pragma once
 
 #include "ext/vector_float3.hpp"
+#include "renderer/index-buffer.hpp"
 #include "renderer/renderer.hpp"
 #include "renderer/shader.hpp"
+#include "renderer/vertex-array.hpp"
+#include "renderer/vertex-buffer-layout.hpp"
 #include <array>
 #include <vector>
 
@@ -22,7 +25,7 @@ class Chunk {
   public:
     Chunk(const glm::vec3& pos) noexcept;
 
-    void Render(const Renderer& renderer, const Shader& shader) const noexcept;
+    void Render(const Renderer& renderer, const Shader& shader) noexcept;
 
   private:
     glm::vec3 pos;
@@ -31,5 +34,10 @@ class Chunk {
     static int constexpr BlockCount = 16; // 16 x 16 x 16
     static int constexpr BlockSize  = 1;
 
+    bool generateMesh{};
+
     viii cubes;
+    VertexArray vao;
+    VertexBuffer vbo;
+    IndexBuffer ibo;
 };

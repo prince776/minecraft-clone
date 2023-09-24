@@ -23,7 +23,6 @@
       "environment": [],
       "externalConsole": false,
       "MIMode": "lldb",
-      "miDebuggerPath": "${workspaceFolder}/.vscode/bin/sudoLLDB.sh",
       "miDebuggerArgs": "-S"
     }
   ]

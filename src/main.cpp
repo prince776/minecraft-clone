@@ -103,14 +103,8 @@ int main(void) {
 
         Chunk chunk(glm::vec3(0, 0, 0));
         std::vector<Chunk> map;
-        for (int i = 0; i < 3; i++) {
-            for (int j = 0; j < 2; j++) {
-                map.push_back(Chunk({
-                    i * Chunk::BlockCount,
-                    j * Chunk::BlockCount,
-                    0,
-                }));
-            }
+        for (int i = 0; i < 5; i++) {
+            map.emplace_back(glm::vec3(i * Chunk::BlockCount, 0 * Chunk::BlockCount, 0));
         }
 
         const double fpsLimit   = 1.0 / 60.0;

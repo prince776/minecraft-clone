@@ -2,20 +2,19 @@
 #include "renderer/core.hpp"
 #include <OpenGL/OpenGL.h>
 
-IndexBuffer::IndexBuffer(const unsigned int* data, size_t count) noexcept
-    : count(count) {
+IndexBuffer::IndexBuffer(const unsigned int* data, size_t count) noexcept : count(count) {
     ASSERT(sizeof(unsigned int) == sizeof(GLuint));
 
     GLCALL(glGenBuffers(1, &glID));
     Bind();
-    GLCALL(glBufferData(GL_ELEMENT_ARRAY_BUFFER,
-                        count * sizeof(unsigned int),
-                        data,
-                        GL_STATIC_DRAW));
+    GLCALL(
+        glBufferData(GL_ELEMENT_ARRAY_BUFFER, count * sizeof(unsigned int), data, GL_STATIC_DRAW));
 }
 
 IndexBuffer::~IndexBuffer() noexcept {
-    GLCALL(glDeleteBuffers(1, &glID));
+    if (glID != 0) {
+        GLCALL(glDeleteBuffers(1, &glID));
+    }
 }
 
 void IndexBuffer::Bind() const noexcept {

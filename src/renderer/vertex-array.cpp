@@ -1,4 +1,5 @@
 #include "renderer/vertex-array.hpp"
+#include "fmt/core.h"
 #include "renderer/core.hpp"
 #include "renderer/vertex-buffer-layout.hpp"
 #include "renderer/vertex-buffer.hpp"
@@ -9,7 +10,9 @@ VertexArray::VertexArray() noexcept {
 }
 
 VertexArray::~VertexArray() noexcept {
-    GLCALL(glDeleteVertexArrays(1, &glID));
+    if (glID != 0) {
+        GLCALL(glDeleteVertexArrays(1, &glID));
+    }
 }
 
 void VertexArray::Bind() const noexcept {
@@ -20,8 +23,7 @@ void VertexArray::Unbind() const noexcept {
     GLCALL(glBindVertexArray(0));
 }
 
-void VertexArray::AddBuffer(const VertexBuffer& vbo,
-                            const VertexBufferLayout& layout) noexcept {
+void VertexArray::AddBuffer(const VertexBuffer& vbo, const VertexBufferLayout& layout) noexcept {
     Bind();
     vbo.Bind();
 
@@ -37,8 +39,7 @@ void VertexArray::AddBuffer(const VertexBuffer& vbo,
                                      element.normalized,
                                      layout.Stride(),
                                      (const void*)offset));
-        offset +=
-            element.count * VertexBufferElement::GetSizeOfType(element.type);
+        offset += element.count * VertexBufferElement::GetSizeOfType(element.type);
         idx++;
     }
 }

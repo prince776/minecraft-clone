@@ -12,7 +12,7 @@
 #include <array>
 #include <vector>
 
-Chunk::Chunk(const glm::vec3& pos) noexcept : pos(pos) {
+Chunk::Chunk(const glm::vec3& pos) noexcept : pos(pos), generateMesh(true), vao(true) {
     cubes = viii(BlockCount, vii(BlockCount, vi(BlockCount)));
     for (int x = 0; x < BlockCount; x++) {
         for (int y = 0; y < BlockCount; y++) {
@@ -30,78 +30,93 @@ static int delX[] = {0, 0, 0, 0, -1, 1};
 static int delY[] = {1, -1, 0, 0, 0, 0};
 static int delZ[] = {0, 0, 1, -1, 0, 0};
 
-void Chunk::Render(const Renderer& renderer, const Shader& shader) const noexcept {
-    std::vector<Vertex> mesh;
-    std::vector<unsigned int> indices;
-    int prevIndex = 0;
+void Chunk::Render(const Renderer& renderer, const Shader& shader) noexcept {
+    if (generateMesh) {
+        std::vector<Vertex> mesh;
+        std::vector<unsigned int> indices;
+        int prevIndex = 0;
 
-    TextureAtlas tilesetAtlas(16, 16);
-    TexCoord dirtTile{2, 15}, grassTile{0, 15}, grassSideTile{3, 15};
+        TextureAtlas tilesetAtlas(16, 16);
+        TexCoord dirtTile{2, 15}, grassTile{0, 15}, grassSideTile{3, 15};
 
-    for (int x = 0; x < BlockCount; x++) {
-        for (int z = 0; z < BlockCount; z++) {
-            for (int y = 0; y < BlockCount; y++) {
+        for (int x = 0; x < BlockCount; x++) {
+            for (int z = 0; z < BlockCount; z++) {
+                for (int y = 0; y < BlockCount; y++) {
 
-                std::array<ChunkCube, 6> adjCubes;
+                    std::array<ChunkCube, 6> adjCubes;
 
-                for (int del = 0; del < 6; del++) {
-                    int x1 = x + delX[del];
-                    int y1 = y + delY[del];
-                    int z1 = z + delZ[del];
+                    for (int del = 0; del < 6; del++) {
+                        int x1 = x + delX[del];
+                        int y1 = y + delY[del];
+                        int z1 = z + delZ[del];
 
-                    if (std::min({x1, y1, z1}) < 0 || std::max({x1, y1, z1}) >= BlockCount) {
-                        adjCubes[del] = ChunkCube{
-                            .state = ChunkCube::State::NOT_PRESENT,
-                        };
-                        continue;
+                        if (std::min({x1, y1, z1}) < 0 || std::max({x1, y1, z1}) >= BlockCount) {
+                            adjCubes[del] = ChunkCube{
+                                .state = ChunkCube::State::NOT_PRESENT,
+                            };
+                            continue;
+                        }
+                        adjCubes[del] = cubes[x1][y1][z1];
                     }
-                    adjCubes[del] = cubes[x1][y1][z1];
-                }
 
-                auto sideTile = grassSideTile;
-                if (y != BlockCount - 1) {
-                    sideTile = dirtTile;
-                }
-
-                Cube cube(glm::vec3(x, y, z),
-                          glm::vec3(BlockSize, BlockSize, BlockSize),
-                          tilesetAtlas,
-                          grassTile,
-                          dirtTile,
-                          sideTile,
-                          0);
-
-                auto cubeVertices = cube.Vertices();
-
-                for (int del = 0; del < 6; del++) {
-                    if (adjCubes[del].state == ChunkCube::State::PRESENT) {
-                        continue;
+                    auto sideTile = grassSideTile;
+                    if (y != BlockCount - 1) {
+                        sideTile = dirtTile;
                     }
-                    for (int idx = del * 4; idx < del * 4 + 4; idx++) {
-                        mesh.push_back(cubeVertices[idx]);
+
+                    Cube cube(glm::vec3(x, y, z) + pos,
+                              glm::vec3(BlockSize, BlockSize, BlockSize),
+                              tilesetAtlas,
+                              grassTile,
+                              dirtTile,
+                              sideTile,
+                              0);
+
+                    auto cubeVertices = cube.Vertices();
+
+                    for (int del = 0; del < 6; del++) {
+                        if (adjCubes[del].state == ChunkCube::State::PRESENT) {
+                            continue;
+                        }
+                        for (int idx = del * 4; idx < del * 4 + 4; idx++) {
+                            mesh.push_back(cubeVertices[idx]);
+                        }
+                        auto faceIndices = cube.FaceIndices(prevIndex);
+                        for (auto faceIdx : faceIndices) {
+                            indices.push_back(faceIdx);
+                        }
+                        prevIndex += 4;
                     }
-                    auto faceIndices = cube.FaceIndices(prevIndex);
-                    for (auto faceIdx : faceIndices) {
-                        indices.push_back(faceIdx);
-                    }
-                    prevIndex += 4;
                 }
             }
         }
+
+        VertexArray _vao;
+        vao = std::move(_vao);
+        _vao.Clean();
+
+        vao.Bind();
+
+        VertexBuffer _vbo = VertexBuffer(mesh.data(), mesh.size() * sizeof(Vertex));
+        vbo               = std::move(_vbo);
+        // TODO: Ideally this clean should happen in move constructor and assignment operator.
+        _vbo.Clean();
+
+        VertexBufferLayout layout;
+        layout.Push<float>(3);
+        layout.Push<float>(2);
+        layout.Push<float>(1);
+
+        vao.AddBuffer(vbo, layout);
+        // TODO: Ideally this clean should happen in move constructor and assignment operator.
+        IndexBuffer _ibo(indices.data(), indices.size());
+        ibo = std::move(_ibo);
+        _ibo.Clean();
+
+        generateMesh = false;
     }
 
-    VertexArray vao;
     vao.Bind();
-
-    VertexBuffer vbo(mesh.data(), mesh.size() * sizeof(Vertex));
-
-    VertexBufferLayout layout;
-    layout.Push<float>(3);
-    layout.Push<float>(2);
-    layout.Push<float>(1);
-    vao.AddBuffer(vbo, layout);
-
-    IndexBuffer ibo(indices.data(), indices.size());
-
+    ibo.Bind();
     renderer.draw(vao, ibo, shader);
 }
