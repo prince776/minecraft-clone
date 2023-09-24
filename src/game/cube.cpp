@@ -27,6 +27,11 @@ Cube::Cube(glm::vec3 pos,
     return indices;
 }
 
+[[nodiscard]] std::array<unsigned int, 6> Cube::FaceIndices(unsigned int startIdx) const noexcept {
+    return std::array<unsigned int, 6>(
+        {startIdx + 0, startIdx + 1, startIdx + 2, startIdx + 2, startIdx + 3, startIdx + 0});
+}
+
 [[nodiscard]] std::array<Vertex, 32> Cube::Vertices() const noexcept {
     auto halfDim     = dim * 0.5f;
     glm::vec3 center = pos + halfDim;

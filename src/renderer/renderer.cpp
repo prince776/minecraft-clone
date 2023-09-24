@@ -1,4 +1,5 @@
 #include "renderer/renderer.hpp"
+#include "fmt/core.h"
 #include "renderer/core.hpp"
 #include "renderer/index-buffer.hpp"
 #include "renderer/shader.hpp"
@@ -16,6 +17,8 @@ void Renderer::draw(const VertexArray& vao,
     shader.Bind();
     vao.Bind();
     ibo.Bind();
+
+    // fmt::println("Drawing {} indices", ibo.Count());
 
     GLCALL(glDrawElements(GL_TRIANGLES, ibo.Count(), GL_UNSIGNED_INT, nullptr));
 }

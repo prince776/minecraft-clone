@@ -85,7 +85,7 @@ int main(void) {
         Renderer renderer;
 
         auto transformMatrix = glm::mat4(1.0f);
-        transformMatrix      = glm::translate(transformMatrix, glm::vec3(5, 5, 19));
+        transformMatrix      = glm::translate(transformMatrix, glm::vec3(-5, -5, -19));
 
         auto& camera = Camera::Get();
 

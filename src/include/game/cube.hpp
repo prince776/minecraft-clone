@@ -18,6 +18,8 @@ class Cube {
 
     [[nodiscard]] std::array<unsigned int, 36> Indices() const noexcept;
 
+    [[nodiscard]] std::array<unsigned int, 6> FaceIndices(unsigned int startIdx) const noexcept;
+
   private:
     glm::vec3 pos;
     glm::vec3 dim;
