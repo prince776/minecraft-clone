@@ -103,8 +103,8 @@ int main(void) {
 
         Chunk chunk(glm::vec3(0, 0, 0));
         std::vector<Chunk> map;
-        for (int i = 0; i < 1; i++) {
-            for (int j = 0; j < 1; j++) {
+        for (int i = 0; i < 3; i++) {
+            for (int j = 0; j < 2; j++) {
                 map.push_back(Chunk({
                     i * Chunk::BlockCount,
                     j * Chunk::BlockCount,
