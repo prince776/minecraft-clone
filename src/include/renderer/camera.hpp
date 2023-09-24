@@ -19,7 +19,7 @@ class Camera {
     void Move(const glm::vec3& delta) noexcept;
     void Rotate(const glm::vec3& delta) noexcept;
 
-    void HandleInput(GLFWwindow* window) noexcept;
+    void HandleInput(GLFWwindow* window, double deltaTime) noexcept;
 
   private:
     glm::vec3 pos;
@@ -28,5 +28,5 @@ class Camera {
     double mouseX = -1, mouseY = -1;
 
   public:
-    static inline float DefaultSpeed = 0.05f;
+    static inline float DefaultSpeed = 5.0f;
 };

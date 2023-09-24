@@ -16,7 +16,14 @@
 #include "renderer/vertex-buffer.hpp"
 #include <GLFW/glfw3.h>
 #include <OpenGL/OpenGL.h>
+#include <array>
 #include <iostream>
+#include <string>
+#include <vector>
+
+void setWindowFPS(GLFWwindow* win);
+
+const static inline std::string GameName = "Minecraft";
 
 int main(void) {
     GLFWwindow* window;
@@ -40,7 +47,7 @@ int main(void) {
 
     /* Make the window's context current */
     glfwMakeContextCurrent(window);
-    glfwSwapInterval(1);
+    glfwSwapInterval(0);
 
     std::cout << glGetString(GL_VERSION) << std::endl;
 
@@ -48,6 +55,9 @@ int main(void) {
     GLCALL(glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA));
 
     GLCALL(glEnable(GL_DEPTH_TEST));
+
+    // glEnable(GL_CULL_FACE);
+    // glCullFace(GL_BACK);
 
     glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
 
@@ -92,22 +102,61 @@ int main(void) {
         auto projectionMat = glm::perspective(70.0f, 1.0f, 0.1f, 100.0f);
 
         Chunk chunk(glm::vec3(0, 0, 0));
+        std::vector<Chunk> map;
+        for (int i = 0; i < 1; i++) {
+            for (int j = 0; j < 1; j++) {
+                map.push_back(Chunk({
+                    i * Chunk::BlockCount,
+                    j * Chunk::BlockCount,
+                    0,
+                }));
+            }
+        }
+
+        const double fpsLimit   = 1.0 / 60.0;
+        double lastUpdateTime   = 0; // number of seconds since the last loop
+        double lastFrameTime    = 0; // number of seconds since the last frame
+        double lastFramRateTime = 0;
+        int frameCount          = 0;
 
         while (!glfwWindowShouldClose(window)) {
-            renderer.clear();
+            double now       = glfwGetTime();
+            double deltaTime = now - lastUpdateTime;
 
-            camera.HandleInput(window);
-
-            basicShader.Bind();
-            texture.Bind();
-            basicShader.SetUniform1i("u_TextureSlot", 0);
-            basicShader.SetUniformMat4f("u_MVP",
-                                        projectionMat * camera.ViewMatrix() * transformMatrix);
-            // renderer.draw(vao, ibo, basicShader);
-            chunk.Render(renderer, basicShader);
-
-            glfwSwapBuffers(window);
+            ////////// TICK //////////
             glfwPollEvents();
+            camera.HandleInput(window, deltaTime);
+
+            //////////////////////////////
+
+            if ((now - lastFrameTime) >= fpsLimit) {
+                ////////// RENDER //////////
+                renderer.clear();
+                basicShader.Bind();
+                texture.Bind();
+                basicShader.SetUniform1i("u_TextureSlot", 0);
+                basicShader.SetUniformMat4f("u_MVP",
+                                            projectionMat * camera.ViewMatrix() * transformMatrix);
+                // renderer.draw(vao, ibo, basicShader);
+                // chunk.Render(renderer, basicShader);
+                for (auto& c : map) {
+                    c.Render(renderer, basicShader);
+                }
+
+                glfwSwapBuffers(window);
+                frameCount++;
+                //////////////////////////////
+                lastFrameTime = now;
+            }
+            // set lastUpdateTime every iteration
+            lastUpdateTime = now;
+
+            if ((now - lastFramRateTime) >= 1.0) {
+                std::string title = GameName + "FPS: " + std::to_string(frameCount);
+                glfwSetWindowTitle(window, title.c_str());
+                lastFramRateTime = now;
+                frameCount       = 0;
+            }
         }
     }
 

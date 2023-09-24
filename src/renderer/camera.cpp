@@ -33,29 +33,30 @@ void Camera::Rotate(const glm::vec3& delta) noexcept {
     rot += delta;
 }
 
-void Camera::HandleInput(GLFWwindow* window) noexcept {
+void Camera::HandleInput(GLFWwindow* window, double deltaTime) noexcept {
+    auto speed    = deltaTime * DefaultSpeed;
     auto posDelta = glm::vec3(0.0f);
     if (glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS) {
-        posDelta.z += DefaultSpeed * std::cos(rot.y);
-        posDelta.x += DefaultSpeed * std::sin(rot.y);
+        posDelta.z += speed * std::cos(rot.y);
+        posDelta.x += speed * std::sin(rot.y);
     }
     if (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS) {
-        posDelta.z -= DefaultSpeed * std::cos(rot.y);
-        posDelta.x -= DefaultSpeed * std::sin(rot.y);
+        posDelta.z -= speed * std::cos(rot.y);
+        posDelta.x -= speed * std::sin(rot.y);
     }
     if (glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS) {
-        posDelta.x += DefaultSpeed * std::cos(rot.y);
-        posDelta.z -= DefaultSpeed * std::sin(rot.y);
+        posDelta.x += speed * std::cos(rot.y);
+        posDelta.z -= speed * std::sin(rot.y);
     }
     if (glfwGetKey(window, GLFW_KEY_A) == GLFW_PRESS) {
-        posDelta.x -= DefaultSpeed * std::cos(rot.y);
-        posDelta.z += DefaultSpeed * std::sin(rot.y);
+        posDelta.x -= speed * std::cos(rot.y);
+        posDelta.z += speed * std::sin(rot.y);
     }
     if (glfwGetKey(window, GLFW_KEY_LEFT_SHIFT) == GLFW_PRESS) {
-        posDelta.y -= DefaultSpeed;
+        posDelta.y -= speed;
     }
     if (glfwGetKey(window, GLFW_KEY_SPACE) == GLFW_PRESS) {
-        posDelta.y += DefaultSpeed;
+        posDelta.y += speed;
     }
 
     Move(posDelta);
