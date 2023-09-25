@@ -99,12 +99,14 @@ int main(void) {
 
         auto& camera = Camera::Get();
 
-        auto projectionMat = glm::perspective(70.0f, 1.0f, 0.1f, 100.0f);
+        auto projectionMat = glm::perspective(70.0f, 1.0f, 0.1f, 150.0f);
 
         Chunk chunk(glm::vec3(0, 0, 0));
         std::vector<Chunk> map;
-        for (int i = 0; i < 5; i++) {
-            map.emplace_back(glm::vec3(i * Chunk::BlockCount, 0 * Chunk::BlockCount, 0));
+        for (int i = 0; i < 16; i++) {
+            for (int j = 0; j < 16; j++) {
+                map.emplace_back(glm::vec3(i * Chunk::BlockCount, 0, j * Chunk::BlockCount));
+            }
         }
 
         const double fpsLimit   = 1.0 / 60.0;
@@ -120,7 +122,6 @@ int main(void) {
             ////////// TICK //////////
             glfwPollEvents();
             camera.HandleInput(window, deltaTime);
-
             //////////////////////////////
 
             if ((now - lastFrameTime) >= fpsLimit) {
@@ -146,7 +147,7 @@ int main(void) {
             lastUpdateTime = now;
 
             if ((now - lastFramRateTime) >= 1.0) {
-                std::string title = GameName + "FPS: " + std::to_string(frameCount);
+                std::string title = GameName + " | FPS: " + std::to_string(frameCount);
                 glfwSetWindowTitle(window, title.c_str());
                 lastFramRateTime = now;
                 frameCount       = 0;

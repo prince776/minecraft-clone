@@ -28,5 +28,5 @@ class Camera {
     double mouseX = -1, mouseY = -1;
 
   public:
-    static inline float DefaultSpeed = 5.0f;
+    static inline float DefaultSpeed = 15.0f;
 };

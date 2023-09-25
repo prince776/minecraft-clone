@@ -1,6 +1,7 @@
 #include "game/chunk.hpp"
 #include "fmt/core.h"
 #include "game/cube.hpp"
+#include "game/perlin.hpp"
 #include "game/textute-atlas.hpp"
 #include "renderer/index-buffer.hpp"
 #include "renderer/renderer.hpp"
@@ -15,11 +16,18 @@
 Chunk::Chunk(const glm::vec3& pos) noexcept : pos(pos), generateMesh(true), vao(true) {
     cubes = viii(BlockCount, vii(BlockCount, vi(BlockCount)));
     for (int x = 0; x < BlockCount; x++) {
-        for (int y = 0; y < BlockCount; y++) {
-            for (int z = 0; z < BlockCount; z++) {
+        for (int z = 0; z < BlockCount; z++) {
+            float height =
+                (perlin::perlin((x + pos.x) / 10.0f, (z + pos.z) / 10.0f) + 1) * 0.5 * BlockCount;
+            int heightInt = int(height);
+
+            for (int y = 0; y < BlockCount; y++) {
                 cubes[x][y][z] = ChunkCube{
-                    .state = ChunkCube::State::PRESENT,
+                    .state = ChunkCube::State::NOT_PRESENT,
                 };
+                if (y < heightInt) {
+                    cubes[x][y][z].state = ChunkCube::State::PRESENT;
+                }
             }
         }
     }
@@ -42,6 +50,9 @@ void Chunk::Render(const Renderer& renderer, const Shader& shader) noexcept {
         for (int x = 0; x < BlockCount; x++) {
             for (int z = 0; z < BlockCount; z++) {
                 for (int y = 0; y < BlockCount; y++) {
+                    if (cubes[x][y][z].state == ChunkCube::State::NOT_PRESENT) {
+                        continue;
+                    }
 
                     std::array<ChunkCube, 6> adjCubes;
 
