@@ -9,7 +9,7 @@
 
 Shader::Shader(const std::string& filepath) noexcept : filepath(filepath) {
     auto [vertexSource, fragmentSource] = parseShaderFile(filepath);
-    glID = createShaderProgram(vertexSource, fragmentSource);
+    glID                                = createShaderProgram(vertexSource, fragmentSource);
 }
 
 Shader::~Shader() {
@@ -24,10 +24,8 @@ void Shader::Unbind() const noexcept {
     GLCALL(glUseProgram(0));
 }
 
-void Shader::SetUniformMat4f(const std::string& name,
-                             const glm::mat4& mat) noexcept {
-    GLCALL(
-        glUniformMatrix4fv(getUniformLocation(name), 1, GL_FALSE, &mat[0][0]));
+void Shader::SetUniformMat4f(const std::string& name, const glm::mat4& mat) noexcept {
+    GLCALL(glUniformMatrix4fv(getUniformLocation(name), 1, GL_FALSE, &mat[0][0]));
 }
 
 void Shader::SetUniform4f(const std::string& name,
@@ -56,8 +54,7 @@ int Shader::getUniformLocation(const std::string& name) noexcept {
     return location;
 }
 
-ShaderProgramSource
-Shader::parseShaderFile(const std::string& path) const noexcept {
+ShaderProgramSource Shader::parseShaderFile(const std::string& path) const noexcept {
     std::ifstream stream(path);
 
     enum class ShaderType {
@@ -87,9 +84,8 @@ Shader::parseShaderFile(const std::string& path) const noexcept {
     };
 }
 
-GLuint
-Shader::createShaderProgram(const std::string& vertexShader,
-                            const std::string& fragmentShader) const noexcept {
+GLuint Shader::createShaderProgram(const std::string& vertexShader,
+                                   const std::string& fragmentShader) const noexcept {
     auto program = glCreateProgram();
     auto vs      = compileShader(GL_VERTEX_SHADER, vertexShader);
     auto fs      = compileShader(GL_FRAGMENT_SHADER, fragmentShader);
@@ -106,8 +102,7 @@ Shader::createShaderProgram(const std::string& vertexShader,
     return program;
 }
 
-GLuint Shader::compileShader(GLenum type,
-                             const std::string& src) const noexcept {
+GLuint Shader::compileShader(GLenum type, const std::string& src) const noexcept {
     auto srcCStr = src.c_str();
     auto id      = glCreateShader(type);
 
@@ -121,9 +116,7 @@ GLuint Shader::compileShader(GLenum type,
         glGetShaderiv(id, GL_INFO_LOG_LENGTH, &length);
         char* message = (char*)alloca(length * sizeof(char));
         glGetShaderInfoLog(id, length, &length, message);
-        std::cout << "["
-                  << (type == GL_VERTEX_SHADER ? "Vertex Shader"
-                                               : "Fragment Shader")
+        std::cout << "[" << (type == GL_VERTEX_SHADER ? "Vertex Shader" : "Fragment Shader")
                   << "]:";
         std::cout << "Failed to compile!\n";
         std::cout << message << std::endl;

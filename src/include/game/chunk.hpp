@@ -1,6 +1,7 @@
 #pragma once
 
 #include "ext/vector_float3.hpp"
+#include "game/textute-atlas.hpp"
 #include "renderer/index-buffer.hpp"
 #include "renderer/renderer.hpp"
 #include "renderer/shader.hpp"
@@ -15,6 +16,9 @@ struct ChunkCube {
         PRESENT,
     };
     State state;
+    TexCoord topTile;
+    TexCoord bottomTile;
+    TexCoord sideTile;
 };
 
 using vi   = std::vector<ChunkCube>;

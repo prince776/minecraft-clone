@@ -2,6 +2,7 @@
 #include "fmt/core.h"
 #include "game/cube.hpp"
 #include "game/perlin.hpp"
+#include "game/random.hpp"
 #include "game/textute-atlas.hpp"
 #include "renderer/index-buffer.hpp"
 #include "renderer/renderer.hpp"
@@ -11,15 +12,27 @@
 #include "renderer/vertex-buffer.hpp"
 #include <algorithm>
 #include <array>
+#include <random>
 #include <vector>
 
 Chunk::Chunk(const glm::vec3& pos) noexcept : pos(pos), generateMesh(true), vao(true) {
+    TextureAtlas tilesetAtlas(16, 16);
+    TexCoord dirtTile{2, 15}, grassTile{0, 15}, grassSideTile{3, 15};
+    TexCoord stoneTile{1, 15}, sandTile{0, 4};
+
     cubes = viii(BlockCount, vii(BlockCount, vi(BlockCount)));
     for (int x = 0; x < BlockCount; x++) {
         for (int z = 0; z < BlockCount; z++) {
-            float height =
-                (perlin::perlin((x + pos.x) / 10.0f, (z + pos.z) / 10.0f) + 1) * 0.5 * BlockCount;
-            int heightInt = int(height);
+
+            int tx = x + pos.x;
+            int tz = z + pos.z;
+
+            float height  = (perlin::perlin((tx) / 10.0f, (tz) / 10.0f) + 1) * 0.5 * BlockCount;
+            int heightInt = std::max(5, int(height));
+
+            std::mt19937 rng(tx + 16 * tz + heightInt * 16 * 16);
+            float stoneHeight = getRandomNumber(rng, 3, 5);
+            float sandHeight  = stoneHeight + getRandomNumber(rng, 1, 2);
 
             for (int y = 0; y < BlockCount; y++) {
                 cubes[x][y][z] = ChunkCube{
@@ -27,6 +40,26 @@ Chunk::Chunk(const glm::vec3& pos) noexcept : pos(pos), generateMesh(true), vao(
                 };
                 if (y < heightInt) {
                     cubes[x][y][z].state = ChunkCube::State::PRESENT;
+                }
+
+                if (y < stoneHeight) {
+                    cubes[x][y][z].sideTile   = stoneTile;
+                    cubes[x][y][z].topTile    = stoneTile;
+                    cubes[x][y][z].bottomTile = stoneTile;
+                } else if (y < sandHeight) {
+                    cubes[x][y][z].sideTile   = sandTile;
+                    cubes[x][y][z].topTile    = sandTile;
+                    cubes[x][y][z].bottomTile = sandTile;
+                } else {
+                    cubes[x][y][z].sideTile   = dirtTile;
+                    cubes[x][y][z].topTile    = dirtTile;
+                    cubes[x][y][z].bottomTile = dirtTile;
+                }
+
+                if (y == heightInt - 1 && y > 6) {
+                    cubes[x][y][z].sideTile   = grassSideTile;
+                    cubes[x][y][z].topTile    = grassTile;
+                    cubes[x][y][z].bottomTile = dirtTile;
                 }
             }
         }
@@ -46,6 +79,7 @@ void Chunk::Render(const Renderer& renderer, const Shader& shader) noexcept {
 
         TextureAtlas tilesetAtlas(16, 16);
         TexCoord dirtTile{2, 15}, grassTile{0, 15}, grassSideTile{3, 15};
+        TexCoord stoneTile{1, 15}, sandTile{0, 4};
 
         for (int x = 0; x < BlockCount; x++) {
             for (int z = 0; z < BlockCount; z++) {
@@ -70,17 +104,12 @@ void Chunk::Render(const Renderer& renderer, const Shader& shader) noexcept {
                         adjCubes[del] = cubes[x1][y1][z1];
                     }
 
-                    auto sideTile = grassSideTile;
-                    if (y != BlockCount - 1) {
-                        sideTile = dirtTile;
-                    }
-
                     Cube cube(glm::vec3(x, y, z) + pos,
                               glm::vec3(BlockSize, BlockSize, BlockSize),
                               tilesetAtlas,
-                              grassTile,
-                              dirtTile,
-                              sideTile,
+                              cubes[x][y][z].topTile,
+                              cubes[x][y][z].bottomTile,
+                              cubes[x][y][z].sideTile,
                               0);
 
                     auto cubeVertices = cube.Vertices();
