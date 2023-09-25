@@ -27,7 +27,7 @@ Chunk::Chunk(const glm::vec3& pos) noexcept : pos(pos), generateMesh(true), vao(
             int tx = x + pos.x;
             int tz = z + pos.z;
 
-            float height  = (perlin::perlin((tx) / 10.0f, (tz) / 10.0f) + 1) * 0.5 * BlockCount;
+            float height  = (perlin::perlin((tx) / 15.0f, (tz) / 15.0f) + 1.3) * 0.5 * BlockCount;
             int heightInt = std::max(5, int(height));
 
             std::mt19937 rng(tx + 16 * tz + heightInt * 16 * 16);
