@@ -20,6 +20,9 @@ void World::Render(const Renderer& renderer, const Shader& shader) noexcept {
     for (auto& chunk : chunks) {
         chunk.Render(renderer, shader, *this);
     }
+    for (auto& chunk : chunks) {
+        chunk.RenderWater(renderer, shader, *this);
+    }
 }
 
 const Chunk* World::LookUpChunk(int x, int y, int z) noexcept {

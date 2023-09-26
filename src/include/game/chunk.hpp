@@ -42,6 +42,7 @@ class Chunk {
     Chunk(const glm::vec3& pos) noexcept;
 
     void Render(const Renderer& renderer, const Shader& shader, World& world) noexcept;
+    void RenderWater(const Renderer& renderer, const Shader& shader, World& world) noexcept;
 
     void GenerateMesh(World& world) noexcept;
 

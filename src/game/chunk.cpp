@@ -86,6 +86,13 @@ void Chunk::Render(const Renderer& renderer, const Shader& shader, World& world)
     vao.Bind();
     ibo.Bind();
     renderer.draw(vao, ibo, shader);
+}
+
+void Chunk::RenderWater(const Renderer& renderer, const Shader& shader, World& world) noexcept {
+    if (generateMesh) {
+        GenerateMesh(world);
+        generateMesh = false;
+    }
 
     waterVAO.Bind();
     waterIBO.Bind();
@@ -156,7 +163,6 @@ void Chunk::GenerateMesh(World& world) noexcept {
                 // std::abs(cubes[x][y][z].topTile.x - waterTile.x) < 1e-3 &&
                 // std::abs(cubes[x][y][z].topTile.y - waterTile.y) < 1e-3;
 
-                int facesForWater = 0;
                 for (int del = 0; del < 6; del++) {
                     bool shouldSkipSide = false;
                     if (cubes[x][y][z].IsTransparent()) {
@@ -195,11 +201,7 @@ void Chunk::GenerateMesh(World& world) noexcept {
                         prevIndex += 4;
                     } else {
                         waterPrevIndex += 4;
-                        facesForWater++;
                     }
-                }
-                if (facesForWater > 1) {
-                    fmt::println("Drawing {} faces for water", facesForWater);
                 }
             }
         }
