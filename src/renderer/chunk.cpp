@@ -1,6 +1,7 @@
 #include "game/chunk.hpp"
 #include "fmt/core.h"
 #include "game/cube.hpp"
+#include "game/geometry.hpp"
 #include "game/perlin.hpp"
 #include "game/random.hpp"
 #include "game/textute-atlas.hpp"
@@ -13,14 +14,13 @@
 #include <algorithm>
 #include <array>
 #include <random>
+#include <valarray>
 #include <vector>
 
 Chunk::Chunk(const glm::vec3& pos) noexcept : pos(pos), generateMesh(true), vao(true) {
-    TextureAtlas tilesetAtlas(16, 16);
-    TexCoord dirtTile{2, 15}, grassTile{0, 15}, grassSideTile{3, 15};
-    TexCoord stoneTile{1, 15}, sandTile{0, 4};
+    cubes           = viii(BlockCount, vii(BlockCount, vi(BlockCount)));
+    int waterHeight = 8;
 
-    cubes = viii(BlockCount, vii(BlockCount, vi(BlockCount)));
     for (int x = 0; x < BlockCount; x++) {
         for (int z = 0; z < BlockCount; z++) {
 
@@ -40,26 +40,31 @@ Chunk::Chunk(const glm::vec3& pos) noexcept : pos(pos), generateMesh(true), vao(
                 };
                 if (y < heightInt) {
                     cubes[x][y][z].state = ChunkCube::State::PRESENT;
-                }
+                    if (y < stoneHeight) {
+                        cubes[x][y][z].sideTile   = stoneTile;
+                        cubes[x][y][z].topTile    = stoneTile;
+                        cubes[x][y][z].bottomTile = stoneTile;
+                    } else if (y < sandHeight) {
+                        cubes[x][y][z].sideTile   = sandTile;
+                        cubes[x][y][z].topTile    = sandTile;
+                        cubes[x][y][z].bottomTile = sandTile;
+                    } else {
+                        cubes[x][y][z].sideTile   = dirtTile;
+                        cubes[x][y][z].topTile    = dirtTile;
+                        cubes[x][y][z].bottomTile = dirtTile;
+                    }
 
-                if (y < stoneHeight) {
-                    cubes[x][y][z].sideTile   = stoneTile;
-                    cubes[x][y][z].topTile    = stoneTile;
-                    cubes[x][y][z].bottomTile = stoneTile;
-                } else if (y < sandHeight) {
-                    cubes[x][y][z].sideTile   = sandTile;
-                    cubes[x][y][z].topTile    = sandTile;
-                    cubes[x][y][z].bottomTile = sandTile;
-                } else {
-                    cubes[x][y][z].sideTile   = dirtTile;
-                    cubes[x][y][z].topTile    = dirtTile;
-                    cubes[x][y][z].bottomTile = dirtTile;
-                }
-
-                if (y == heightInt - 1 && y > 6) {
-                    cubes[x][y][z].sideTile   = grassSideTile;
-                    cubes[x][y][z].topTile    = grassTile;
-                    cubes[x][y][z].bottomTile = dirtTile;
+                    if (y == heightInt - 1 && y > 6) {
+                        cubes[x][y][z].sideTile   = grassSideTile;
+                        cubes[x][y][z].topTile    = grassTile;
+                        cubes[x][y][z].bottomTile = dirtTile;
+                    }
+                } else if (y < waterHeight) {
+                    cubes[x][y][z].state      = ChunkCube::State::PRESENT;
+                    cubes[x][y][z].sideTile   = waterTile;
+                    cubes[x][y][z].topTile    = waterTile;
+                    cubes[x][y][z].bottomTile = waterTile;
+                    cubes[x][y][z].alpha      = 0.2f;
                 }
             }
         }
@@ -73,64 +78,105 @@ static int delZ[] = {0, 0, 1, -1, 0, 0};
 
 void Chunk::Render(const Renderer& renderer, const Shader& shader) noexcept {
     if (generateMesh) {
-        std::vector<Vertex> mesh;
-        std::vector<unsigned int> indices;
-        int prevIndex = 0;
+        GenerateMesh();
+    }
 
-        TextureAtlas tilesetAtlas(16, 16);
-        TexCoord dirtTile{2, 15}, grassTile{0, 15}, grassSideTile{3, 15};
-        TexCoord stoneTile{1, 15}, sandTile{0, 4};
+    vao.Bind();
+    ibo.Bind();
+    renderer.draw(vao, ibo, shader);
 
-        for (int x = 0; x < BlockCount; x++) {
-            for (int z = 0; z < BlockCount; z++) {
-                for (int y = 0; y < BlockCount; y++) {
-                    if (cubes[x][y][z].state == ChunkCube::State::NOT_PRESENT) {
+    waterVAO.Bind();
+    waterIBO.Bind();
+    renderer.draw(waterVAO, waterIBO, shader);
+}
+
+void Chunk::GenerateMesh() noexcept {
+    std::vector<Vertex> mesh, waterMesh;
+    std::vector<unsigned int> indices, waterIndices;
+    int prevIndex = 0, waterPrevIndex = 0;
+
+    for (int x = 0; x < BlockCount; x++) {
+        for (int z = 0; z < BlockCount; z++) {
+            for (int y = 0; y < BlockCount; y++) {
+                if (cubes[x][y][z].state == ChunkCube::State::NOT_PRESENT) {
+                    continue;
+                }
+
+                std::array<ChunkCube, 6> adjCubes;
+
+                for (int del = 0; del < 6; del++) {
+                    int x1 = x + delX[del];
+                    int y1 = y + delY[del];
+                    int z1 = z + delZ[del];
+
+                    if (std::min({x1, y1, z1}) < 0 || std::max({x1, y1, z1}) >= BlockCount) {
+                        adjCubes[del] = ChunkCube{
+                            .state = ChunkCube::State::NOT_PRESENT,
+                        };
+                        continue;
+                    }
+                    adjCubes[del] = cubes[x1][y1][z1];
+                }
+
+                Cube cube(glm::vec3(x, y, z) + pos,
+                          glm::vec3(BlockSize, BlockSize, BlockSize),
+                          tilesetAtlas,
+                          cubes[x][y][z].topTile,
+                          cubes[x][y][z].bottomTile,
+                          cubes[x][y][z].sideTile,
+                          0);
+
+                auto cubeVertices = cube.Vertices(TransparentWhite(cubes[x][y][z].alpha));
+
+                bool isWater = cubes[x][y][z].IsTransparent();
+                // std::abs(cubes[x][y][z].topTile.x - waterTile.x) < 1e-3 &&
+                // std::abs(cubes[x][y][z].topTile.y - waterTile.y) < 1e-3;
+
+                for (int del = 0; del < 6; del++) {
+                    bool shouldSkipSide = false;
+                    if (cubes[x][y][z].IsTransparent()) {
+                        shouldSkipSide = adjCubes[del].state == ChunkCube::State::PRESENT;
+                    } else {
+                        shouldSkipSide = adjCubes[del].state == ChunkCube::State::PRESENT &&
+                                         !adjCubes[del].IsTransparent();
+                    }
+
+                    if (shouldSkipSide) {
                         continue;
                     }
 
-                    std::array<ChunkCube, 6> adjCubes;
-
-                    for (int del = 0; del < 6; del++) {
-                        int x1 = x + delX[del];
-                        int y1 = y + delY[del];
-                        int z1 = z + delZ[del];
-
-                        if (std::min({x1, y1, z1}) < 0 || std::max({x1, y1, z1}) >= BlockCount) {
-                            adjCubes[del] = ChunkCube{
-                                .state = ChunkCube::State::NOT_PRESENT,
-                            };
-                            continue;
+                    for (int idx = del * 4; idx < del * 4 + 4; idx++) {
+                        if (!isWater) {
+                            mesh.push_back(cubeVertices[idx]);
+                        } else {
+                            waterMesh.push_back(cubeVertices[idx]);
                         }
-                        adjCubes[del] = cubes[x1][y1][z1];
                     }
 
-                    Cube cube(glm::vec3(x, y, z) + pos,
-                              glm::vec3(BlockSize, BlockSize, BlockSize),
-                              tilesetAtlas,
-                              cubes[x][y][z].topTile,
-                              cubes[x][y][z].bottomTile,
-                              cubes[x][y][z].sideTile,
-                              0);
-
-                    auto cubeVertices = cube.Vertices();
-
-                    for (int del = 0; del < 6; del++) {
-                        if (adjCubes[del].state == ChunkCube::State::PRESENT) {
-                            continue;
-                        }
-                        for (int idx = del * 4; idx < del * 4 + 4; idx++) {
-                            mesh.push_back(cubeVertices[idx]);
-                        }
-                        auto faceIndices = cube.FaceIndices(prevIndex);
-                        for (auto faceIdx : faceIndices) {
+                    auto pi = prevIndex;
+                    if (isWater) {
+                        pi = waterPrevIndex;
+                    }
+                    auto faceIndices = cube.FaceIndices(pi);
+                    for (auto faceIdx : faceIndices) {
+                        if (!isWater) {
                             indices.push_back(faceIdx);
+                        } else {
+                            waterIndices.push_back(faceIdx);
                         }
+                    }
+
+                    if (!isWater) {
                         prevIndex += 4;
+                    } else {
+                        waterPrevIndex += 4;
                     }
                 }
             }
         }
+    }
 
+    {
         VertexArray _vao;
         vao = std::move(_vao);
         _vao.Clean();
@@ -139,24 +185,50 @@ void Chunk::Render(const Renderer& renderer, const Shader& shader) noexcept {
 
         VertexBuffer _vbo = VertexBuffer(mesh.data(), mesh.size() * sizeof(Vertex));
         vbo               = std::move(_vbo);
-        // TODO: Ideally this clean should happen in move constructor and assignment operator.
+        // TODO: Ideally this clean should happen in move constructor and assignment
+        // operator.
         _vbo.Clean();
 
         VertexBufferLayout layout;
         layout.Push<float>(3);
         layout.Push<float>(2);
         layout.Push<float>(1);
+        layout.Push<float>(4);
 
         vao.AddBuffer(vbo, layout);
-        // TODO: Ideally this clean should happen in move constructor and assignment operator.
+        // TODO: Ideally this clean should happen in move constructor and assignment
+        // operator.
         IndexBuffer _ibo(indices.data(), indices.size());
         ibo = std::move(_ibo);
         _ibo.Clean();
-
-        generateMesh = false;
     }
 
-    vao.Bind();
-    ibo.Bind();
-    renderer.draw(vao, ibo, shader);
+    {
+        VertexArray _vao;
+        waterVAO = std::move(_vao);
+        _vao.Clean();
+
+        waterVAO.Bind();
+
+        VertexBuffer _vbo = VertexBuffer(waterMesh.data(), waterMesh.size() * sizeof(Vertex));
+        waterVBO          = std::move(_vbo);
+        // TODO: Ideally this clean should happen in move constructor and assignment
+        // operator.
+        _vbo.Clean();
+
+        VertexBufferLayout layout;
+        layout.Push<float>(3);
+        layout.Push<float>(2);
+        layout.Push<float>(1);
+        layout.Push<float>(4);
+
+        waterVAO.AddBuffer(waterVBO, layout);
+        // TODO: Ideally this clean should happen in move constructor and assignment
+        // operator.
+        IndexBuffer _ibo(waterIndices.data(), waterIndices.size());
+        waterIBO = std::move(_ibo);
+        _ibo.Clean();
+    }
+
+    generateMesh = false;
 }

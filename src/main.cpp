@@ -64,47 +64,20 @@ int main(void) {
     {
         Texture texture("res/textures/tileset.png");
 
-        // TextureAtlas tilesetAtlas(16, 16);
-        // TexCoord dirtTile{2, 15}, grassTile{0, 15}, grassSideTile{3, 15};
-
-        // Cube cube(glm::vec3(0, 0, 0),
-        //           glm::vec3(1, 1, 1),
-        //           tilesetAtlas,
-        //           grassTile,
-        //           dirtTile,
-        //           grassSideTile,
-        //           0);
-
-        // VertexArray vao;
-        // vao.Bind();
-
-        // auto cubeVertices = cube.Vertices();
-        // auto cubeIndices  = cube.Indices();
-
-        // VertexBuffer vbo(cubeVertices.data(), cubeVertices.size() * sizeof(Vertex));
-
-        // VertexBufferLayout layout;
-        // layout.Push<float>(3);
-        // layout.Push<float>(2);
-        // layout.Push<float>(1);
-        // vao.AddBuffer(vbo, layout);
-
-        // IndexBuffer ibo(cubeIndices.data(), cubeIndices.size());
-
         Shader basicShader("res/shaders/basic.glsl");
         Renderer renderer;
 
         auto transformMatrix = glm::mat4(1.0f);
-        transformMatrix      = glm::translate(transformMatrix, glm::vec3(-5, -5, -19));
+        transformMatrix      = glm::translate(transformMatrix, glm::vec3(-5, -5, -29));
 
         auto& camera = Camera::Get();
 
-        auto projectionMat = glm::perspective(70.0f, 1.0f, 0.1f, 150.0f);
+        auto projectionMat = glm::perspective(70.0f, 1.0f, 0.1f, 120.0f);
 
         Chunk chunk(glm::vec3(0, 0, 0));
         std::vector<Chunk> map;
-        for (int i = 0; i < 16; i++) {
-            for (int j = 0; j < 16; j++) {
+        for (int i = 0; i < 6; i++) {
+            for (int j = 0; j < 6; j++) {
                 map.emplace_back(glm::vec3(i * Chunk::BlockCount, 0, j * Chunk::BlockCount));
             }
         }
@@ -127,13 +100,14 @@ int main(void) {
             if ((now - lastFrameTime) >= fpsLimit) {
                 ////////// RENDER //////////
                 renderer.clear();
+
                 basicShader.Bind();
                 texture.Bind();
+
                 basicShader.SetUniform1i("u_TextureSlot", 0);
                 basicShader.SetUniformMat4f("u_MVP",
                                             projectionMat * camera.ViewMatrix() * transformMatrix);
-                // renderer.draw(vao, ibo, basicShader);
-                // chunk.Render(renderer, basicShader);
+
                 for (auto& c : map) {
                     c.Render(renderer, basicShader);
                 }

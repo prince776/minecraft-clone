@@ -1,4 +1,5 @@
 #include "renderer/shader.hpp"
+#include "fmt/core.h"
 #include "renderer/core.hpp"
 #include <OpenGL/OpenGL.h>
 #include <array>
@@ -90,15 +91,16 @@ GLuint Shader::createShaderProgram(const std::string& vertexShader,
     auto vs      = compileShader(GL_VERTEX_SHADER, vertexShader);
     auto fs      = compileShader(GL_FRAGMENT_SHADER, fragmentShader);
 
-    glAttachShader(program, vs);
-    glAttachShader(program, fs);
+    GLCALL(glAttachShader(program, vs));
+    GLCALL(glAttachShader(program, fs));
 
-    glLinkProgram(program);
-    glValidateProgram(program);
+    GLCALL(glLinkProgram(program));
+    GLCALL(glValidateProgram(program));
 
-    glDeleteShader(vs);
-    glDeleteShader(fs);
+    GLCALL(glDeleteShader(vs));
+    GLCALL(glDeleteShader(fs));
 
+    fmt::println("Creating shader: {}", program);
     return program;
 }
 
@@ -106,21 +108,21 @@ GLuint Shader::compileShader(GLenum type, const std::string& src) const noexcept
     auto srcCStr = src.c_str();
     auto id      = glCreateShader(type);
 
-    glShaderSource(id, 1, &srcCStr, nullptr);
-    glCompileShader(id);
+    GLCALL(glShaderSource(id, 1, &srcCStr, nullptr));
+    GLCALL(glCompileShader(id));
 
     int result;
-    glGetShaderiv(id, GL_COMPILE_STATUS, &result);
+    GLCALL(glGetShaderiv(id, GL_COMPILE_STATUS, &result));
     if (result == GL_FALSE) {
         int length;
-        glGetShaderiv(id, GL_INFO_LOG_LENGTH, &length);
+        GLCALL(glGetShaderiv(id, GL_INFO_LOG_LENGTH, &length));
         char* message = (char*)alloca(length * sizeof(char));
-        glGetShaderInfoLog(id, length, &length, message);
+        GLCALL(glGetShaderInfoLog(id, length, &length, message));
         std::cout << "[" << (type == GL_VERTEX_SHADER ? "Vertex Shader" : "Fragment Shader")
                   << "]:";
         std::cout << "Failed to compile!\n";
         std::cout << message << std::endl;
-        glDeleteShader(id);
+        GLCALL(glDeleteShader(id));
         return 0;
     }
 

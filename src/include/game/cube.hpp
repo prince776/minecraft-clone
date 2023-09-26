@@ -14,7 +14,7 @@ class Cube {
          TexCoord sideTexture,
          size_t texSlot) noexcept;
 
-    [[nodiscard]] std::array<Vertex, 32> Vertices() const noexcept;
+    [[nodiscard]] std::array<Vertex, 32> Vertices(Vec4 color = WhiteColor) const noexcept;
 
     [[nodiscard]] std::array<unsigned int, 36> Indices() const noexcept;
 
