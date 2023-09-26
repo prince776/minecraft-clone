@@ -1,10 +1,10 @@
-#include "game/chunk.hpp"
 #include "fmt/core.h"
 #include "game/cube.hpp"
 #include "game/geometry.hpp"
 #include "game/perlin.hpp"
 #include "game/random.hpp"
 #include "game/textute-atlas.hpp"
+#include "game/world.hpp"
 #include "renderer/index-buffer.hpp"
 #include "renderer/renderer.hpp"
 #include "renderer/shader.hpp"
@@ -14,6 +14,7 @@
 #include <algorithm>
 #include <array>
 #include <random>
+#include <sys/_types/_intptr_t.h>
 #include <valarray>
 #include <vector>
 
@@ -76,9 +77,10 @@ static int delX[] = {0, 0, 0, 0, -1, 1};
 static int delY[] = {1, -1, 0, 0, 0, 0};
 static int delZ[] = {0, 0, 1, -1, 0, 0};
 
-void Chunk::Render(const Renderer& renderer, const Shader& shader) noexcept {
+void Chunk::Render(const Renderer& renderer, const Shader& shader, World& world) noexcept {
     if (generateMesh) {
-        GenerateMesh();
+        GenerateMesh(world);
+        generateMesh = false;
     }
 
     vao.Bind();
@@ -90,10 +92,22 @@ void Chunk::Render(const Renderer& renderer, const Shader& shader) noexcept {
     renderer.draw(waterVAO, waterIBO, shader);
 }
 
-void Chunk::GenerateMesh() noexcept {
+void Chunk::GenerateMesh(World& world) noexcept {
     std::vector<Vertex> mesh, waterMesh;
     std::vector<unsigned int> indices, waterIndices;
     int prevIndex = 0, waterPrevIndex = 0;
+
+    auto intPos     = Pos();
+    auto leftChunk  = world.LookUpChunk(intPos.x - BlockCount, intPos.y, intPos.z);
+    auto rightChunk = world.LookUpChunk(intPos.x + BlockCount, intPos.y, intPos.z);
+    auto frontChunk = world.LookUpChunk(intPos.x, intPos.y, intPos.z + BlockCount);
+    auto backChunk  = world.LookUpChunk(intPos.x, intPos.y, intPos.z - BlockCount);
+
+    // fmt::println("Adjacent chunks: {} {} {} {}",
+    //              (intptr_t)leftChunk,
+    //              (intptr_t)rightChunk,
+    //              (intptr_t)frontChunk,
+    //              (intptr_t)backChunk);
 
     for (int x = 0; x < BlockCount; x++) {
         for (int z = 0; z < BlockCount; z++) {
@@ -110,9 +124,19 @@ void Chunk::GenerateMesh() noexcept {
                     int z1 = z + delZ[del];
 
                     if (std::min({x1, y1, z1}) < 0 || std::max({x1, y1, z1}) >= BlockCount) {
-                        adjCubes[del] = ChunkCube{
-                            .state = ChunkCube::State::NOT_PRESENT,
-                        };
+                        if (x1 == -1 && leftChunk != nullptr) {
+                            adjCubes[del] = leftChunk->cubes[BlockCount - 1][y][z];
+                        } else if (x1 == BlockCount && rightChunk != nullptr) {
+                            adjCubes[del] = rightChunk->cubes[0][y][z];
+                        } else if (z1 == -1 && backChunk != nullptr) {
+                            adjCubes[del] = backChunk->cubes[x][y][BlockCount - 1];
+                        } else if (z1 == BlockCount && frontChunk != nullptr) {
+                            adjCubes[del] = frontChunk->cubes[x][y][0];
+                        } else {
+                            adjCubes[del] = ChunkCube{
+                                .state = ChunkCube::State::NOT_PRESENT,
+                            };
+                        }
                         continue;
                     }
                     adjCubes[del] = cubes[x1][y1][z1];
@@ -132,6 +156,7 @@ void Chunk::GenerateMesh() noexcept {
                 // std::abs(cubes[x][y][z].topTile.x - waterTile.x) < 1e-3 &&
                 // std::abs(cubes[x][y][z].topTile.y - waterTile.y) < 1e-3;
 
+                int facesForWater = 0;
                 for (int del = 0; del < 6; del++) {
                     bool shouldSkipSide = false;
                     if (cubes[x][y][z].IsTransparent()) {
@@ -170,7 +195,11 @@ void Chunk::GenerateMesh() noexcept {
                         prevIndex += 4;
                     } else {
                         waterPrevIndex += 4;
+                        facesForWater++;
                     }
+                }
+                if (facesForWater > 1) {
+                    fmt::println("Drawing {} faces for water", facesForWater);
                 }
             }
         }
@@ -229,6 +258,4 @@ void Chunk::GenerateMesh() noexcept {
         waterIBO = std::move(_ibo);
         _ibo.Clean();
     }
-
-    generateMesh = false;
 }

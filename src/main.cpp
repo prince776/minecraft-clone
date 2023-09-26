@@ -5,6 +5,7 @@
 #include "game/chunk.hpp"
 #include "game/cube.hpp"
 #include "game/textute-atlas.hpp"
+#include "game/world.hpp"
 #include "glm.hpp"
 #include "glm/gtc/matrix_transform.hpp"
 #include "renderer/camera.hpp"
@@ -75,12 +76,8 @@ int main(void) {
         auto projectionMat = glm::perspective(70.0f, 1.0f, 0.1f, 120.0f);
 
         Chunk chunk(glm::vec3(0, 0, 0));
-        std::vector<Chunk> map;
-        for (int i = 0; i < 6; i++) {
-            for (int j = 0; j < 6; j++) {
-                map.emplace_back(glm::vec3(i * Chunk::BlockCount, 0, j * Chunk::BlockCount));
-            }
-        }
+
+        World world(8, 8);
 
         const double fpsLimit   = 1.0 / 60.0;
         double lastUpdateTime   = 0; // number of seconds since the last loop
@@ -94,6 +91,7 @@ int main(void) {
 
             ////////// TICK //////////
             glfwPollEvents();
+            world.Tick();
             camera.HandleInput(window, deltaTime);
             //////////////////////////////
 
@@ -108,9 +106,7 @@ int main(void) {
                 basicShader.SetUniformMat4f("u_MVP",
                                             projectionMat * camera.ViewMatrix() * transformMatrix);
 
-                for (auto& c : map) {
-                    c.Render(renderer, basicShader);
-                }
+                world.Render(renderer, basicShader);
 
                 glfwSwapBuffers(window);
                 frameCount++;
