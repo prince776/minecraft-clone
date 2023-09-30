@@ -1,12 +1,12 @@
-# minecraftClone
+# Minecraft Clone
 
 This is a clone of minecraft in C++ with openGL.
 
 I have written this only for purpose of exploring how to write a 3D mincraft like game.
 That is why there's a lot of prototype-ish code, with lot of copy/move semantics bugs.
 
-Infinite world gen works but something happens due to the move/copy semantics that results
-in game crashing so it is disabled for now.
+Infinite world gen works but I had some errors due to the move/copy semantics that results
+in game crashing so it is using `std::map` rn, and is a bit less performant.
 
 I have not implemented lots of game mechanics, simply for the reason that I wasn't interested. Also I've only tested it on M1 mac :p
 
