@@ -84,44 +84,44 @@ void Player::HandleInput(GLFWwindow* window, double deltaTime) noexcept {
 void Player::Tick(GLFWwindow* window, double deltaTime, World& world) noexcept {
     HandleInput(window, deltaTime);
 
-    for (auto deltaX : {-16, 16, 0, 32, -32}) {
-        for (auto deltaZ : {-16, 16, 0, 32, -32}) {
-            auto playerChunkPos = pos;
-            playerChunkPos.y    = 0;
-            playerChunkPos.x += deltaX;
-            playerChunkPos.z += deltaZ;
+    // for (auto deltaX : {-16, 16, 0, 32, -32}) {
+    //     for (auto deltaZ : {-16, 16, 0, 32, -32}) {
+    //         auto playerChunkPos = pos;
+    //         playerChunkPos.y    = 0;
+    //         playerChunkPos.x += deltaX;
+    //         playerChunkPos.z += deltaZ;
 
-            auto [_, playerChunk] = world.BlockAt(playerChunkPos);
+    //         auto [_, playerChunk] = world.BlockAt(playerChunkPos);
 
-            if (!playerChunk) {
-                int x = playerChunkPos.x;
-                int z = playerChunkPos.z;
+    //         if (!playerChunk) {
+    //             int x = playerChunkPos.x;
+    //             int z = playerChunkPos.z;
 
-                int chunkX = (x / Chunk::BlockCount) * Chunk::BlockCount;
-                int chunkZ = (z / Chunk::BlockCount) * Chunk::BlockCount;
-                if (x < 0)
-                    chunkX -= Chunk::BlockCount;
-                if (z < 0)
-                    chunkZ -= Chunk::BlockCount;
+    //             int chunkX = (x / Chunk::BlockCount) * Chunk::BlockCount;
+    //             int chunkZ = (z / Chunk::BlockCount) * Chunk::BlockCount;
+    //             if (x < 0)
+    //                 chunkX -= Chunk::BlockCount;
+    //             if (z < 0)
+    //                 chunkZ -= Chunk::BlockCount;
 
-                world.AddChunk(chunkX, chunkZ);
+    //             world.AddChunk(chunkX, chunkZ);
 
-                auto leftChunk  = world.LookUpChunk(chunkX - Chunk::BlockCount, 0, chunkZ);
-                auto rightChunk = world.LookUpChunk(chunkX + Chunk::BlockCount, 0, chunkZ);
-                auto frontChunk = world.LookUpChunk(chunkX, 0, chunkZ - Chunk::BlockCount);
-                auto backChunk  = world.LookUpChunk(chunkX, 0, chunkZ + Chunk::BlockCount);
+    //             auto leftChunk  = world.LookUpChunk(chunkX - Chunk::BlockCount, 0, chunkZ);
+    //             auto rightChunk = world.LookUpChunk(chunkX + Chunk::BlockCount, 0, chunkZ);
+    //             auto frontChunk = world.LookUpChunk(chunkX, 0, chunkZ - Chunk::BlockCount);
+    //             auto backChunk  = world.LookUpChunk(chunkX, 0, chunkZ + Chunk::BlockCount);
 
-                if (leftChunk)
-                    leftChunk->generateMesh = true;
-                if (rightChunk)
-                    rightChunk->generateMesh = true;
-                if (frontChunk)
-                    frontChunk->generateMesh = true;
-                if (backChunk)
-                    backChunk->generateMesh = true;
-            }
-        }
-    }
+    //             if (leftChunk)
+    //                 leftChunk->generateMesh = true;
+    //             if (rightChunk)
+    //                 rightChunk->generateMesh = true;
+    //             if (frontChunk)
+    //                 frontChunk->generateMesh = true;
+    //             if (backChunk)
+    //                 backChunk->generateMesh = true;
+    //         }
+    //     }
+    // }
 
     if (blockPlacementChecker == 0) {
         // Calculate the direction vector
