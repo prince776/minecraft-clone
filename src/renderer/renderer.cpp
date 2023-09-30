@@ -18,6 +18,9 @@ void Renderer::clear() const noexcept {
 void Renderer::draw(const VertexArray& vao,
                     const IndexBuffer& ibo,
                     const Shader& shader) const noexcept {
+    if (vao.GLID() == 0 || ibo.GLID() == 0) {
+        return;
+    }
     shader.Bind();
     vao.Bind();
     ibo.Bind();

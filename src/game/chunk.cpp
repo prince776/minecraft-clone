@@ -30,7 +30,8 @@ Chunk::Chunk(const glm::vec3& pos) noexcept : pos(pos), generateMesh(true), vao(
             int tx = x + pos.x;
             int tz = z + pos.z;
 
-            float height  = (perlin::perlin((tx) / 15.0f, (tz) / 15.0f) + 1.3) * 0.5 * BlockCount;
+            float height = (perlin::perlin((tx) / 15.0f + 10000, (tz) / 15.0f + 10000) + 1.3) *
+                           0.5 * BlockCount;
             int heightInt = std::max(5, int(height));
 
             std::mt19937 rng(tx + 16 * tz + heightInt * 16 * 16);
@@ -70,6 +71,9 @@ static int delY[] = {1, -1, 0, 0, 0, 0};
 static int delZ[] = {0, 0, 1, -1, 0, 0};
 
 void Chunk::Tick(World& world) noexcept {
+    if (vao.GLID() == 0 || ibo.GLID() == 0 || vbo.GLID() == 0) {
+        generateMesh = true;
+    }
     if (generateMesh) {
         GenerateMesh(world);
         generateMesh = false;

@@ -10,6 +10,34 @@ class IndexBuffer {
     IndexBuffer(const unsigned int* data, size_t count) noexcept;
     ~IndexBuffer() noexcept;
 
+    IndexBuffer(const IndexBuffer& other) {
+        glID  = other.glID;
+        count = other.count;
+    }
+    IndexBuffer& operator=(const IndexBuffer& other) {
+        glID  = other.glID;
+        count = other.count;
+
+        return *this;
+    }
+
+    IndexBuffer(IndexBuffer&& other) noexcept {
+        glID  = other.glID;
+        count = other.count;
+
+        other.glID  = 0;
+        other.count = 0;
+    }
+    IndexBuffer& operator=(IndexBuffer&& other) noexcept {
+        glID  = other.glID;
+        count = other.count;
+
+        other.glID  = 0;
+        other.count = 0;
+
+        return *this;
+    }
+
     void Bind() const noexcept;
     void Unbind() const noexcept;
 

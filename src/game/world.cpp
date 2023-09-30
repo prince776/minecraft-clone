@@ -10,6 +10,7 @@
 #include <tuple>
 
 World::World(int l, int w) noexcept {
+    chunks.reserve(10000);
     for (int x = 0; x < l; x++) {
         for (int z = 0; z < w; z++) {
             chunks.push_back(Chunk(glm::vec3(x * Chunk::BlockCount, 0, z * Chunk::BlockCount)));

@@ -8,6 +8,25 @@ class VertexBuffer {
     VertexBuffer(const void* data, size_t size) noexcept;
     ~VertexBuffer();
 
+    VertexBuffer(const VertexBuffer& other) {
+        glID = other.glID;
+    }
+    VertexBuffer& operator=(const VertexBuffer& other) {
+        glID = other.glID;
+        return *this;
+    }
+
+    VertexBuffer(VertexBuffer&& other) noexcept {
+        glID       = other.glID;
+        other.glID = 0;
+    }
+    VertexBuffer& operator=(VertexBuffer&& other) noexcept {
+        glID       = other.glID;
+        other.glID = 0;
+
+        return *this;
+    }
+
     void Bind() const noexcept;
     void Unbind() const noexcept;
 

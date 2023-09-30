@@ -12,6 +12,25 @@ class VertexArray {
     VertexArray() noexcept;
     ~VertexArray() noexcept;
 
+    VertexArray(const VertexArray& other) {
+        glID = other.glID;
+    }
+    VertexArray& operator=(const VertexArray& other) {
+        glID = other.glID;
+        return *this;
+    }
+
+    VertexArray(VertexArray&& other) noexcept {
+        glID       = other.glID;
+        other.glID = 0;
+    }
+    VertexArray& operator=(VertexArray&& other) noexcept {
+        glID       = other.glID;
+        other.glID = 0;
+
+        return *this;
+    }
+
     void Bind() const noexcept;
     void Unbind() const noexcept;
     void AddBuffer(const VertexBuffer& vbo, const VertexBufferLayout& layout) noexcept;
