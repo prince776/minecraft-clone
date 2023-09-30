@@ -4,6 +4,7 @@
 #include "fwd.hpp"
 #include "game/chunk.hpp"
 #include "game/cube.hpp"
+#include "game/player.hpp"
 #include "game/textute-atlas.hpp"
 #include "game/world.hpp"
 #include "glm.hpp"
@@ -69,15 +70,16 @@ int main(void) {
         Renderer renderer;
 
         auto transformMatrix = glm::mat4(1.0f);
-        transformMatrix      = glm::translate(transformMatrix, glm::vec3(-5, -5, -29));
+        // transformMatrix      = glm::translate(transformMatrix, glm::vec3(-5, -5, -29));
 
         auto& camera = Camera::Get();
+        Player player(glm::vec3(5, 13, 10));
 
         auto projectionMat = glm::perspective(70.0f, 1.0f, 0.1f, 120.0f);
 
         Chunk chunk(glm::vec3(0, 0, 0));
 
-        World world(8, 8);
+        World world(10, 10);
 
         const double fpsLimit   = 1.0 / 60.0;
         double lastUpdateTime   = 0; // number of seconds since the last loop
@@ -91,8 +93,12 @@ int main(void) {
 
             ////////// TICK //////////
             glfwPollEvents();
-            world.Tick();
-            camera.HandleInput(window, deltaTime);
+            world.Tick(world);
+            player.Tick(window, deltaTime, world);
+            camera.SetPos(player.Pos());
+            camera.SetRot(player.Rot());
+
+            // camera.HandleInput(window, deltaTime);
             //////////////////////////////
 
             if ((now - lastFrameTime) >= fpsLimit) {
@@ -107,6 +113,7 @@ int main(void) {
                                             projectionMat * camera.ViewMatrix() * transformMatrix);
 
                 world.Render(renderer, basicShader);
+                player.Render(renderer, basicShader);
 
                 glfwSwapBuffers(window);
                 frameCount++;

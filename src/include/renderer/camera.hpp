@@ -16,10 +16,13 @@ class Camera {
 
     glm::mat4 ViewMatrix() const noexcept;
 
-    void Move(const glm::vec3& delta) noexcept;
-    void Rotate(const glm::vec3& delta) noexcept;
+    void SetPos(const glm::vec3& newPos) noexcept {
+        pos = newPos;
+    }
 
-    void HandleInput(GLFWwindow* window, double deltaTime) noexcept;
+    void SetRot(const glm::vec3& newRot) noexcept {
+        rot = newRot;
+    }
 
   private:
     glm::vec3 pos;

@@ -1,6 +1,7 @@
 #pragma once
 #include "renderer/renderer.hpp"
 #include "renderer/shader.hpp"
+#include <cassert>
 #include <map>
 #include <tuple>
 #include <vector>
@@ -41,6 +42,7 @@ class Chunk {
   public:
     Chunk(const glm::vec3& pos) noexcept;
 
+    void Tick(World& world) noexcept;
     void Render(const Renderer& renderer, const Shader& shader, World& world) noexcept;
     void RenderWater(const Renderer& renderer, const Shader& shader, World& world) noexcept;
 

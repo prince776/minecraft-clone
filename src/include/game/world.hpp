@@ -5,6 +5,7 @@
 #include "renderer/shader.hpp"
 #include <map>
 #include <tuple>
+#include <utility>
 #include <vector>
 
 #include "renderer/renderer.hpp"
@@ -18,10 +19,12 @@ class World {
   public:
     World(int l, int w) noexcept;
 
-    void Tick() noexcept;
+    void Tick(World& world) noexcept;
     void Render(const Renderer& renderer, const Shader& shader) noexcept;
 
-    const Chunk* LookUpChunk(int x, int y, int z) noexcept;
+    Chunk* LookUpChunk(int x, int y, int z) noexcept;
+
+    std::pair<glm::vec<3, int>, Chunk*> BlockAt(glm::vec3 pos) noexcept;
 
   private:
     std::vector<Chunk> chunks;

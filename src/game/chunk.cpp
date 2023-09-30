@@ -1,3 +1,4 @@
+#include "game/chunk.hpp"
 #include "fmt/core.h"
 #include "game/cube.hpp"
 #include "game/geometry.hpp"
@@ -77,12 +78,14 @@ static int delX[] = {0, 0, 0, 0, -1, 1};
 static int delY[] = {1, -1, 0, 0, 0, 0};
 static int delZ[] = {0, 0, 1, -1, 0, 0};
 
-void Chunk::Render(const Renderer& renderer, const Shader& shader, World& world) noexcept {
+void Chunk::Tick(World& world) noexcept {
     if (generateMesh) {
         GenerateMesh(world);
         generateMesh = false;
     }
+}
 
+void Chunk::Render(const Renderer& renderer, const Shader& shader, World& world) noexcept {
     vao.Bind();
     ibo.Bind();
     renderer.draw(vao, ibo, shader);
