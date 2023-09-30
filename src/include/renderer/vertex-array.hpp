@@ -7,7 +7,7 @@
 
 class VertexArray {
   public:
-    VertexArray(bool doNothing /* = should be always tru*/) noexcept {
+    VertexArray(bool /* = should be always tru*/) noexcept {
     }
     VertexArray() noexcept;
     ~VertexArray() noexcept;

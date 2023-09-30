@@ -46,8 +46,9 @@ class Player {
     glm::vec3 rot;
 
     double mouseX = -1, mouseY = -1;
-    int blockPlacementCooldown = 10; // frames
-    int blockPlacementChecker  = blockPlacementCooldown;
+    int blockPlacementCooldown = 10, worldGenCooldown = 30; // frames
+    int blockPlacementChecker = blockPlacementCooldown;
+    int worldGenChecker       = worldGenCooldown;
 
     int selectedBlockToPlace = 0;
 

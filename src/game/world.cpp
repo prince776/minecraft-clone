@@ -10,25 +10,26 @@
 #include <tuple>
 
 World::World(int l, int w) noexcept {
-    chunks.reserve(10000);
     for (int x = 0; x < l; x++) {
         for (int z = 0; z < w; z++) {
-            chunks.push_back(Chunk(glm::vec3(x * Chunk::BlockCount, 0, z * Chunk::BlockCount)));
+            int tx = x * Chunk::BlockCount, tz = z * Chunk::BlockCount;
+            std::tuple<int, int, int> key(tx, 0, tz);
+            chunks.emplace(key, glm::vec3(tx, 0, tz));
         }
     }
 }
 
 void World::Tick(World& world) noexcept {
-    for (auto& chunk : chunks) {
+    for (auto& [_, chunk] : chunks) {
         chunk.Tick(world);
     }
 }
 
 void World::Render(const Renderer& renderer, const Shader& shader) noexcept {
-    for (auto& chunk : chunks) {
+    for (auto& [_, chunk] : chunks) {
         chunk.Render(renderer, shader, *this);
     }
-    for (auto& chunk : chunks) {
+    for (auto& [_, chunk] : chunks) {
         chunk.RenderWater(renderer, shader, *this);
     }
 }
@@ -36,25 +37,11 @@ void World::Render(const Renderer& renderer, const Shader& shader) noexcept {
 Chunk* World::LookUpChunk(int x, int y, int z) noexcept {
     auto key = std::tuple<int, int, int>(x, y, z);
 
-    if (!chunkLookUpTable.contains(key)) {
-        auto found = -1;
-        for (size_t idx = 0; idx < chunks.size(); idx++) {
-            auto chunkPos = chunks[idx].Pos();
-            if (chunkPos.x == x && chunkPos.y == y && chunkPos.z == z) {
-                found = idx;
-                break;
-            }
-        }
-
-        if (found == -1) {
-            return nullptr;
-        }
-
-        chunkLookUpTable[key] = found;
+    if (!chunks.contains(key)) {
+        return nullptr;
     }
 
-    auto idx = chunkLookUpTable[key];
-    return &chunks[idx];
+    return &chunks.at(key);
 }
 
 std::pair<glm::vec<3, int>, Chunk*> World::BlockAt(glm::vec3 pos) noexcept {
@@ -65,10 +52,11 @@ std::pair<glm::vec<3, int>, Chunk*> World::BlockAt(glm::vec3 pos) noexcept {
     int chunkX = (x / Chunk::BlockCount) * Chunk::BlockCount;
     int chunkY = (y / Chunk::BlockCount) * Chunk::BlockCount;
     int chunkZ = (z / Chunk::BlockCount) * Chunk::BlockCount;
+
     if (x < 0)
         chunkX -= Chunk::BlockCount;
-    if (y < 0)
-        chunkY -= Chunk::BlockCount;
+    // if (y < 0)
+    //     chunkY -= Chunk::BlockCount;
     if (z < 0)
         chunkZ -= Chunk::BlockCount;
 
@@ -85,10 +73,14 @@ std::pair<glm::vec<3, int>, Chunk*> World::BlockAt(glm::vec3 pos) noexcept {
     int tz = z - chunkZ;
     if (tx < 0)
         tx += 2 * Chunk::BlockCount;
-    if (ty < 0)
-        ty += 2 * Chunk::BlockCount;
+    // if (ty < 0)
+    //     ty += 2 * Chunk::BlockCount;
     if (tz < 0)
         tz += 2 * Chunk::BlockCount;
 
+    if (tx < 0 || ty < 0 || tz < 0 || tx >= Chunk::BlockCount || ty >= Chunk::BlockCount ||
+        tz >= Chunk::BlockCount) {
+        return {glm::vec<3, int>(0), nullptr};
+    }
     return {glm::vec<3, int>(tx, ty, tz), chunk};
 }

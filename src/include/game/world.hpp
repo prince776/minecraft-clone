@@ -27,10 +27,12 @@ class World {
     std::pair<glm::vec<3, int>, Chunk*> BlockAt(glm::vec3 pos) noexcept;
 
     void AddChunk(int x, int z) noexcept {
-        chunks.emplace_back(glm::vec3(x, 0, z));
+        std::tuple<int, int, int> key(x, 0, z);
+        chunks.emplace(key, Chunk(glm::vec3(x, 0, z)));
+        // chunks[key] = Chunk(glm::vec3(x, 0, z));
+        // chunks.emplace(std::make_tuple(x, 0, z), glm::vec3(x, 0, z));
     }
 
   private:
-    std::vector<Chunk> chunks;
-    std::map<std::tuple<int, int, int>, size_t> chunkLookUpTable;
+    std::map<std::tuple<int, int, int>, Chunk> chunks;
 };
