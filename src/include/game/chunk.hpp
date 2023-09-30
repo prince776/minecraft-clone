@@ -1,4 +1,5 @@
 #pragma once
+#include "game/tiles.hpp"
 #include "renderer/renderer.hpp"
 #include "renderer/shader.hpp"
 #include <cassert>
@@ -22,9 +23,7 @@ struct ChunkCube {
         PRESENT,
     };
     State state;
-    TexCoord topTile;
-    TexCoord bottomTile;
-    TexCoord sideTile;
+    TileMap tilemap;
     float alpha{1.0f};
 
     bool IsTransparent() const noexcept {
@@ -65,8 +64,4 @@ class Chunk {
     VertexArray vao, waterVAO;
     VertexBuffer vbo, waterVBO;
     IndexBuffer ibo, waterIBO;
-
-    TextureAtlas tilesetAtlas{16, 16};
-    TexCoord dirtTile{2, 15}, grassTile{0, 15}, grassSideTile{3, 15};
-    TexCoord stoneTile{1, 15}, sandTile{0, 4}, waterTile{14, 15};
 };

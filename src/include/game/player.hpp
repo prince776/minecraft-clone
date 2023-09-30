@@ -3,9 +3,22 @@
 #include "GLFW/glfw3.h"
 #include "ext/vector_float3.hpp"
 #include "game/chunk.hpp"
+#include "game/tiles.hpp"
 #include "game/world.hpp"
 #include "renderer/renderer.hpp"
 #include "renderer/shader.hpp"
+#include <array>
+
+inline std::array<TileMap, 8> tilePlacementMap = {
+    grassTileMap,
+    dirtTileMap,
+    stoneTileMap,
+    cobbleStoneTileMap,
+    woodTileMap,
+    waterTileMap,
+    sandTileMap,
+    sandStoneTileMap,
+};
 
 class Player {
   public:
@@ -35,6 +48,8 @@ class Player {
     double mouseX = -1, mouseY = -1;
     int blockPlacementCooldown = 10; // frames
     int blockPlacementChecker  = blockPlacementCooldown;
+
+    int selectedBlockToPlace = 0;
 
   public:
     static inline float DefaultSpeed = 15.0f;

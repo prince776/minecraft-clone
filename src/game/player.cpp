@@ -2,6 +2,7 @@
 #include "GLFW/glfw3.h"
 #include "fmt/core.h"
 #include "game/chunk.hpp"
+#include "game/tiles.hpp"
 #include <cmath>
 
 void Player::Move(const glm::vec3& delta) noexcept {
@@ -62,6 +63,16 @@ void Player::HandleInput(GLFWwindow* window, double deltaTime) noexcept {
     mouseY = currY;
 
     Rotate(rotDelta);
+
+    for (int i = 0; i < 8; i++) {
+        if (glfwGetKey(window, GLFW_KEY_0 + i)) {
+            if (selectedBlockToPlace != i) {
+                fmt::println("Selecting block to place: {}", i);
+            }
+            selectedBlockToPlace = i;
+            break;
+        }
+    }
 }
 
 // x + sinTheta
@@ -88,13 +99,47 @@ void Player::Tick(GLFWwindow* window, double deltaTime, World& world) noexcept {
             auto rayVec            = pos + reach * direction;
             auto [blockPos, chunk] = world.BlockAt(rayVec);
             if (chunk) {
-                auto& cube = chunk->cubes[blockPos.x][blockPos.y][blockPos.z];
+                auto& cube          = chunk->cubes[blockPos.x][blockPos.y][blockPos.z];
+                Chunk* toRegenerate = nullptr;
                 if (cube.state == ChunkCube::State::PRESENT) {
                     if (glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_1)) {
-                        cube.state          = ChunkCube::State::NOT_PRESENT;
-                        chunk->generateMesh = true;
+                        cube.state   = ChunkCube::State::NOT_PRESENT;
+                        toRegenerate = chunk;
 
-                        auto chunkPos   = chunk->Pos();
+                        // // fmt::println("Ray at: {}, {} {}: {}", rayVec.x, rayVec.y, rayVec.z,
+                        // reach);
+                        // // fmt::println("Block selected: {} {} {}",
+                        //              blockPos.x,
+                        //              blockPos.y,
+                        //              blockPos.z);
+                    } else if (glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_2)) {
+                        rayVec                                   = pos + (reach - 1) * direction;
+                        auto [placementBlockPos, placementChunk] = world.BlockAt(rayVec);
+
+                        if (placementChunk) {
+                            auto& placementCube =
+                                chunk->cubes[placementBlockPos.x][placementBlockPos.y]
+                                            [placementBlockPos.z];
+
+                            if (placementCube.state == ChunkCube::State::PRESENT) {
+                                fmt::println("shouldn't happen");
+                            }
+
+                            placementCube.tilemap = tilePlacementMap[selectedBlockToPlace];
+                            placementCube.state   = ChunkCube::State::PRESENT;
+                            if (selectedBlockToPlace == 5) {
+                                placementCube.alpha = 0.2f;
+                            } else {
+                                placementCube.alpha = 1;
+                            }
+
+                            toRegenerate = placementChunk;
+                        }
+                    }
+
+                    if (toRegenerate) {
+                        toRegenerate->generateMesh = true;
+                        auto chunkPos              = toRegenerate->Pos();
                         auto leftChunk  = world.LookUpChunk(chunkPos.x - Chunk::BlockCount,
                                                            chunkPos.y,
                                                            chunkPos.z);
@@ -120,13 +165,6 @@ void Player::Tick(GLFWwindow* window, double deltaTime, World& world) noexcept {
                         if (backChunk && blockPos.z == 0) {
                             backChunk->generateMesh = true;
                         }
-
-                        // // fmt::println("Ray at: {}, {} {}: {}", rayVec.x, rayVec.y, rayVec.z,
-                        // reach);
-                        // // fmt::println("Block selected: {} {} {}",
-                        //              blockPos.x,
-                        //              blockPos.y,
-                        //              blockPos.z);
 
                         blockPlacementChecker += blockPlacementCooldown;
                         break;

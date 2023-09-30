@@ -5,6 +5,7 @@
 #include "game/perlin.hpp"
 #include "game/random.hpp"
 #include "game/textute-atlas.hpp"
+#include "game/tiles.hpp"
 #include "game/world.hpp"
 #include "renderer/index-buffer.hpp"
 #include "renderer/renderer.hpp"
@@ -43,30 +44,20 @@ Chunk::Chunk(const glm::vec3& pos) noexcept : pos(pos), generateMesh(true), vao(
                 if (y < heightInt) {
                     cubes[x][y][z].state = ChunkCube::State::PRESENT;
                     if (y < stoneHeight) {
-                        cubes[x][y][z].sideTile   = stoneTile;
-                        cubes[x][y][z].topTile    = stoneTile;
-                        cubes[x][y][z].bottomTile = stoneTile;
+                        cubes[x][y][z].tilemap = stoneTileMap;
                     } else if (y < sandHeight) {
-                        cubes[x][y][z].sideTile   = sandTile;
-                        cubes[x][y][z].topTile    = sandTile;
-                        cubes[x][y][z].bottomTile = sandTile;
+                        cubes[x][y][z].tilemap = sandTileMap;
                     } else {
-                        cubes[x][y][z].sideTile   = dirtTile;
-                        cubes[x][y][z].topTile    = dirtTile;
-                        cubes[x][y][z].bottomTile = dirtTile;
+                        cubes[x][y][z].tilemap = dirtTileMap;
                     }
 
                     if (y == heightInt - 1 && y > 6) {
-                        cubes[x][y][z].sideTile   = grassSideTile;
-                        cubes[x][y][z].topTile    = grassTile;
-                        cubes[x][y][z].bottomTile = dirtTile;
+                        cubes[x][y][z].tilemap = grassTileMap;
                     }
                 } else if (y < waterHeight) {
-                    cubes[x][y][z].state      = ChunkCube::State::PRESENT;
-                    cubes[x][y][z].sideTile   = waterTile;
-                    cubes[x][y][z].topTile    = waterTile;
-                    cubes[x][y][z].bottomTile = waterTile;
-                    cubes[x][y][z].alpha      = 0.2f;
+                    cubes[x][y][z].state   = ChunkCube::State::PRESENT;
+                    cubes[x][y][z].tilemap = waterTileMap;
+                    cubes[x][y][z].alpha   = 0.2f;
                 }
             }
         }
@@ -92,11 +83,6 @@ void Chunk::Render(const Renderer& renderer, const Shader& shader, World& world)
 }
 
 void Chunk::RenderWater(const Renderer& renderer, const Shader& shader, World& world) noexcept {
-    if (generateMesh) {
-        GenerateMesh(world);
-        generateMesh = false;
-    }
-
     waterVAO.Bind();
     waterIBO.Bind();
     renderer.draw(waterVAO, waterIBO, shader);
@@ -155,16 +141,15 @@ void Chunk::GenerateMesh(World& world) noexcept {
                 Cube cube(glm::vec3(x, y, z) + pos,
                           glm::vec3(BlockSize, BlockSize, BlockSize),
                           tilesetAtlas,
-                          cubes[x][y][z].topTile,
-                          cubes[x][y][z].bottomTile,
-                          cubes[x][y][z].sideTile,
+                          cubes[x][y][z].tilemap.topTile,
+                          cubes[x][y][z].tilemap.bottomTile,
+                          cubes[x][y][z].tilemap.sideTile,
                           0);
 
                 auto cubeVertices = cube.Vertices(TransparentWhite(cubes[x][y][z].alpha));
 
-                bool isWater = cubes[x][y][z].IsTransparent();
-                // std::abs(cubes[x][y][z].topTile.x - waterTile.x) < 1e-3 &&
-                // std::abs(cubes[x][y][z].topTile.y - waterTile.y) < 1e-3;
+                bool isWater = std::abs(cubes[x][y][z].tilemap.topTile.x - waterTile.x) < 1e-3 &&
+                               std::abs(cubes[x][y][z].tilemap.topTile.y - waterTile.y) < 1e-3;
 
                 for (int del = 0; del < 6; del++) {
                     bool shouldSkipSide = false;
@@ -211,12 +196,14 @@ void Chunk::GenerateMesh(World& world) noexcept {
     }
 
     {
+        // vao.~VertexArray();
         VertexArray _vao;
         vao = std::move(_vao);
         _vao.Clean();
 
         vao.Bind();
 
+        // vbo.~VertexBuffer();
         VertexBuffer _vbo = VertexBuffer(mesh.data(), mesh.size() * sizeof(Vertex));
         vbo               = std::move(_vbo);
         // TODO: Ideally this clean should happen in move constructor and assignment
@@ -232,18 +219,21 @@ void Chunk::GenerateMesh(World& world) noexcept {
         vao.AddBuffer(vbo, layout);
         // TODO: Ideally this clean should happen in move constructor and assignment
         // operator.
+        // ibo.~IndexBuffer();
         IndexBuffer _ibo(indices.data(), indices.size());
         ibo = std::move(_ibo);
         _ibo.Clean();
     }
 
     {
+        // waterVAO.~VertexArray();
         VertexArray _vao;
         waterVAO = std::move(_vao);
         _vao.Clean();
 
         waterVAO.Bind();
 
+        // waterVBO.~VertexBuffer();
         VertexBuffer _vbo = VertexBuffer(waterMesh.data(), waterMesh.size() * sizeof(Vertex));
         waterVBO          = std::move(_vbo);
         // TODO: Ideally this clean should happen in move constructor and assignment
@@ -259,6 +249,7 @@ void Chunk::GenerateMesh(World& world) noexcept {
         waterVAO.AddBuffer(waterVBO, layout);
         // TODO: Ideally this clean should happen in move constructor and assignment
         // operator.
+        // waterIBO.~IndexBuffer();
         IndexBuffer _ibo(waterIndices.data(), waterIndices.size());
         waterIBO = std::move(_ibo);
         _ibo.Clean();
